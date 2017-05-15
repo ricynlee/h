@@ -2,17 +2,12 @@
 #define _H_TERM_H
 
 //
-// Dependency headers
-//
-#include "def.h"
-
-//
 // Type & constant definitions
 //
 #define _WIN32_USE_VTES 1 /*Win10/ConEmu或可在Win32上支持VTES*/
 
 #if defined(_WIN32) && !_WIN32_USE_VTES
-  #include <windows.h>
+# include <windows.h>
   typedef enum {
       FC_BLACK       = 0,
       FC_DARKRED     = FOREGROUND_RED,
@@ -33,7 +28,7 @@
       FC_DEFAULT     = (-1)
   } FC;
 
-  #define FC_MASK 0x0000000F
+# define FC_MASK 0x0000000F
 
   typedef enum {
       BC_BLACK       = 0,
@@ -55,7 +50,7 @@
       BC_DEFAULT     = (-1)
   } BC;
 
-  #define BC_MASK 0x000000F0
+# define BC_MASK 0x000000F0
 #elif defined(__linux__) || _WIN32_USE_VTES
   // Virtual Terminal Escape Sequence (VTES for short)
   typedef enum {
@@ -102,7 +97,7 @@
 //
 // Functions declarations
 //
-extern bool get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
+extern int  get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
 extern void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...);
 extern int  pause(void);
 

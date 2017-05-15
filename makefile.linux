@@ -1,6 +1,6 @@
 BUILT:main
 	./main
-	
+
 main:main.c term.c *.h clear
 	gcc -std=c99 -pedantic -o main main.c term.c
 
