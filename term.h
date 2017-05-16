@@ -4,9 +4,7 @@
 //
 // Type & constant definitions
 //
-#define _WIN32_USE_VTES 1 /*Win10/ConEmu或可在Win32上支持VTES*/
-
-#if defined(_WIN32) && !_WIN32_USE_VTES
+#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
 # include <windows.h>
   typedef enum {
       FC_BLACK       = 0,
@@ -51,7 +49,7 @@
   } BC;
 
 # define BC_MASK 0x000000F0
-#elif defined(__linux__) || _WIN32_USE_VTES
+#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
   // Virtual Terminal Escape Sequence (VTES for short)
   typedef enum {
       FC_BLACK       = 30,

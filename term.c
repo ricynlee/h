@@ -47,7 +47,7 @@ int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
 // void printf_color(FOREGROND_COLOR fc, BACKGROUND_COLOR bc, ...);
 //
 void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...){
-#if defined(_WIN32) && !_WIN32_USE_VTES
+#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
 	HANDLE  hStdout;
 	WORD    wOldColorAttrs;
     BOOL    bSuccess;
@@ -75,7 +75,7 @@ void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...)
     if(bSuccess){
         SetConsoleTextAttribute(hStdout, wOldColorAttrs);
     }
-#elif defined(__linux__) || _WIN32_USE_VTES
+#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
 # ifdef _WIN32
 
 #   ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -86,23 +86,23 @@ void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...)
 #     define DISABLE_NEWLINE_AUTO_RETURN        0x0008
 #   endif // DISABLE_NEWLINE_AUTO_RETURN
 
-    bool bSuccess=true; // Must init to true
+    int bSuccess=1; // Must init to 1
     HANDLE hStdout;
     hStdout=GetStdHandle(STD_OUTPUT_HANDLE);
     if(INVALID_HANDLE_VALUE==hStdout){
-        bSuccess=false;
+        bSuccess=0;
     }
     DWORD dwOriginalOutMode = 0;
     if(!bSuccess || !GetConsoleMode(hStdout, &dwOriginalOutMode)){
-        bSuccess=false;
+        bSuccess=0;
     }
     DWORD dwOutMode = dwOriginalOutMode|ENABLE_VIRTUAL_TERMINAL_PROCESSING|DISABLE_NEWLINE_AUTO_RETURN;
     if(!bSuccess || !SetConsoleMode(hStdout, dwOutMode)){
-        bSuccess=false;
+        bSuccess=0;
         // we failed to set both modes, try to step down mode gracefully.
         dwOutMode = dwOriginalOutMode|ENABLE_VIRTUAL_TERMINAL_PROCESSING;
         if (!bSuccess || !SetConsoleMode(hStdout, dwOutMode)){
-            bSuccess=false;
+            bSuccess=0;
         }
     }
     if(bSuccess){
