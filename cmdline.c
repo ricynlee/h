@@ -53,14 +53,27 @@ Calculator mode
     Calculate the expression
  */
 
-#include<stdio.h> 
+#include <stdio.h> 
+#include <string.h>
 
+// 判断str是否以pattern开头
+int starts_with(const char* str, const char* pattern){
+    for(int i=0;pattern[i];i++){
+        if(pattern[i]^str[i])
+            return 0;
+    }
+    return 1;
+}
+
+// 解析命令行参数
 int parser(int argc, char* argv[]){
-    for(int i=0;i<argc;i++)
-        printf("%s\n",argv[i]);
+    for(int i=0;i<argc;i++){
+        // strcmp(argv[i],"--");
+    }
     return 0;
 }
 
 int main(int argc, char* argv[]){
-    return parser(argc,argv);
+    printf("%d\n",starts_with("asd","ad"));
+    return 0;
 }
