@@ -28,6 +28,7 @@
  * tell
  * read
  * write
+ * truncate
  * 经过本头文件的封装,MINGW/GCC的文件读写代码可以直接移植,
  * 并可以很方便地实现32位操作系统下的LFS.
  *
