@@ -15,6 +15,7 @@
 # endif
 #elif defined(__linux__) // LINUX
 # define tell(fd)   lseek(fd,0,SEEK_CUR)
+# define truncate   truncate_WIN32_API
 #endif
 
 //
