@@ -2,7 +2,7 @@
 
 #if defined(_WIN32)
 # include <windows.h>
-# include <unistd.h>
+# include <errno.h>
 #endif
 
 // 判断文件是否过大
@@ -47,14 +47,14 @@ int truncate_WIN32_API(const char* path, off_t length){
     LONG length_LO_32BITS = *((LONG*)(&length) + 1);
 #   endif
 
-    if(INVALID_SET_FILE_POINTER == SetFilePointer(hF, length_LO_32BITS, &length_HI_32BITS, FILE_BEGIN){
+    if(INVALID_SET_FILE_POINTER == SetFilePointer(hF, length_LO_32BITS, &length_HI_32BITS, FILE_BEGIN)){
         CloseHandle(hF);
         return EINVAL;
     }
 
 # else // LFS off
 
-    if(INVALID_SET_FILE_POINTER == SetFilePointer(hF, length, NULL, FILE_BEGIN){
+    if(INVALID_SET_FILE_POINTER == SetFilePointer(hF, length, NULL, FILE_BEGIN)){
         CloseHandle(hF);
         return EINVAL;
     }
