@@ -1,8 +1,2 @@
-BUILT:main.exe
-	main
-	
-main.exe:main.c term.c *.h clear
-	gcc -o main.exe main.c term.c file.c -std=c99 -pedantic -D_FILE_OFFSET_BITS=64 -D_WIN32_USE_VTES=0
-
-clear:
-	cls
+main.exe:./term/term.c ./file/file.c
+	gcc -o main.exe main.c $^ -std=c99 -pedantic -D_FILE_OFFSET_BITS=64 -D_WIN32_USE_VTES=0 -I./file/ -I./term/
