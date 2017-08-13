@@ -1,2 +1,2 @@
 main.exe:./term/term.c ./file/file.c
-	gcc -o main.exe main.c $^ -std=c99 -pedantic -D_FILE_OFFSET_BITS=64 -D_WIN32_USE_VTES=0 -I./file/ -I./term/
+	gcc -o main.exe main.c $^ -D_FILE_OFFSET_BITS=64 -D_WIN32_USE_VTES=0

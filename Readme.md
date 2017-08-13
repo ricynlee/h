@@ -6,12 +6,12 @@
 跨平台的命令行16进制编辑器。
 > 跨平台指支持Windows/Linux，Mac还是不要命令行了。
 
-> This program is designed to run on 32-bit Windows/Linux only.  
-> This program is intended to be compiled with gcc or mingw(TDM-GCC).  
-> Perhaps MSVC will be supported in the future.  
+> 仅适用于32位Windows/Linux.  
+> 使用gcc或mingw(TDM-GCC)编译.  
+> 未来可能兼容MSVC编译.  
 
 ## 短期计划
 
-确认`truncate()`不会损坏原有数据
-
-> 在Win32平台已经确认
+Linux下,在CFLAGS开启-std=c99时,会警告implicit declaration 'truncate64'/'truncate',但是可以成功编译,似乎可以正常执行.  
+找到警告原因.  
+> 据称是标准C不推荐POSIX族函数?因为在开启-std=gnu99后不会有警告.

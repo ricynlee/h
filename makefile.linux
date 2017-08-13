@@ -1,8 +1,2 @@
-BUILT:main
-	./main
-	
-main:main.c term.c *.h clear
-	gcc -std=c99 -pedantic -o main main.c term.c file.c -D_FILE_OFFSET_BITS=64
-
-clear:
-	clear
+main.exe:./term/term.c ./file/file.c
+	gcc -o main.exe main.c $^ -D_FILE_OFFSET_BITS=64

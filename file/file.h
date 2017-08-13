@@ -15,6 +15,9 @@
 #   endif
 #   define truncate   truncate_WIN32_API
 # elif defined(__linux__) // LINUX
+#   if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS==64
+#     define truncate truncate64 // Weird. Def necessary only when -std=c99 enabled.
+#   endif
 #   define tell(fd)   lseek(fd,0,SEEK_CUR)
 # endif
 

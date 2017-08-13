@@ -1,11 +1,10 @@
 #include <stdio.h>
-#include "term.h"
-#include "file.h"
+#include "term/term.h"
+#include "file/file.h"
+#include <errno.h>
 
 int main(){
-    int n_byte;
-    printf("输入期望的字节数:");
-    scanf("%d",&n_byte);
+    off_t n_byte=0x140000000;
     truncate("a.txt", n_byte);
-    return 0;
+    return errno;
 }
