@@ -12,6 +12,9 @@
 
 ## 短期计划
 
-Linux下,在CFLAGS开启-std=c99时,会警告implicit declaration 'truncate64'/'truncate',但是可以成功编译,似乎可以正常执行.  
-找到警告原因.  
-> 据称是标准C不推荐POSIX族函数?因为在开启-std=gnu99后不会有警告.
+* 命令行定稿
+* 设计一套适用于常数的HEX运算规则(准脚本?)
+
+## 笔记
+Linux下,在CFLAGS开启-std=c99时,会警告implicit declaration 'truncate64'/'truncate',但是可以成功编译,似乎可以正常执行.  
+> 标准的选择会影响编译时的一系列宏定义,包括**feature test宏**.而这些宏又*可能*影响POSIX函数/GNU扩展函数的实现.`truncate`就是一个会受影响的函数.本程序使用-std=gnu99可以完全正常使用.
