@@ -20,3 +20,20 @@
 ## 笔记
 Linux下,在CFLAGS开启-std=c99时,会警告implicit declaration 'truncate64'/'truncate',但是可以成功编译,似乎可以正常执行.  
 > 标准的选择会影响编译时的一系列宏定义,包括**feature test宏**.而这些宏又*可能*影响POSIX函数/GNU扩展函数的实现.`truncate`就是一个会受影响的函数.本程序使用-std=gnu99可以完全正常使用.
+
+## 模块功能区分
+
+**term**
+提供WIN32/LINUX通用的终端基础操作功能
+
+**file**
+提供WIN32/LINUX通用的文件操作函数,兼容POSIX,可选LFS支持
+
+**cmdline**
+命令行解析与命令派发
+
+**operation**
+命令行各功能的具体实现
+
+**main**
+不要被名字欺骗,这是临时测试的程序
