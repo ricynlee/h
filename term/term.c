@@ -1,4 +1,4 @@
-#include <stdio.h>
+ï»¿#include <stdio.h>
 #include <stdarg.h>
 #include "term.h"
 
@@ -14,9 +14,9 @@
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define MAX(x,y) ((x)>(y)?(x):(y))
 
-// »ñÈ¡ÖÕ¶Ë/¿ØÖÆÌ¨´óĞ¡(ÒÔ×Ö·û¼Æ)
+// è·å–ç»ˆç«¯/æ§åˆ¶å°å¤§å°(ä»¥å­—ç¬¦è®¡)
 // int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
-// ·µ»ØÖµ:·µ»Ø0Îª³É¹¦,·ñÔòÊ§°Ü.
+// è¿”å›å€¼:è¿”å›0ä¸ºæˆåŠŸ,å¦åˆ™å¤±è´¥.
 int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
     if((!ref_w) || (!ref_h))
         return (-1);
@@ -43,7 +43,7 @@ int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
     return 0;
 }
 
-// ¿ÉÉèÖÃÑÕÉ«µÄprintf
+// å¯è®¾ç½®é¢œè‰²çš„printf
 // void printf_color(FOREGROND_COLOR fc, BACKGROUND_COLOR bc, ...);
 //
 void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...){
@@ -138,33 +138,32 @@ void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...)
 #endif
 }
 
-// ¹ÒÆğ½ø³Ì,µÈ´ıÓÃ»§°´¼ü
+// æŒ‚èµ·è¿›ç¨‹,ç­‰å¾…ç”¨æˆ·æŒ‰é”®
 // int pause(void);
-// ·µ»ØÖµ:°´¼üµÄASCIIÂë
+// è¿”å›å€¼:æŒ‰é”®çš„ASCIIç 
 int pause(void){
 #if defined(_WIN32)
     return getch();
 #elif defined(__linux__)
     char inbuf;
-    struct termios tios;
+    struct termios tios, tios_pause;
     int bSuccess=1; // Must init to 1
     fflush(stdout);
 
     if(tcgetattr(STDIN_FILENO, &tios)<0)
         bSuccess=0;
 
-    tios.c_lflag&=~ICANON; // ¹Ø±ÕCanonicalÄ£Ê½(ÕâÑùÎŞĞë»»ĞĞ¼´¿É»ñµÃÊäÈë)
-    tios.c_lflag&=~ECHO;   // ¹Ø±Õ»ØÏÔ
-    tios.c_cc[VMIN]=1;     // ÔÚ·ÇCanonicalÄ£Ê½ÏÂ×îÉÙÊäÈë1×Ö·û¼´¿É¶ÁÈ¡
-    tios.c_cc[VTIME]=0;    // read»áÒ»Ö±µÈ´ıÊäÈë,ÎŞ³¬Ê±
-    if(tcsetattr(STDIN_FILENO, TCSANOW, &tios)<0) // ĞŞ¸Ä²¢Á¢¿ÌÉúĞ§
+    tios_pause = tios;
+    tios_pause.c_lflag&=~ICANON; // å…³é—­Canonicalæ¨¡å¼(è¿™æ ·æ— é¡»æ¢è¡Œå³å¯è·å¾—è¾“å…¥)
+    tios_pause.c_lflag&=~ECHO;   // å…³é—­å›æ˜¾
+    tios_pause.c_cc[VMIN]=1;     // åœ¨éCanonicalæ¨¡å¼ä¸‹æœ€å°‘è¾“å…¥1å­—ç¬¦å³å¯è¯»å–
+    tios_pause.c_cc[VTIME]=0;    // readä¼šä¸€ç›´ç­‰å¾…è¾“å…¥,æ— è¶…æ—¶
+    if(tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause)<0) // ä¿®æ”¹å¹¶ç«‹åˆ»ç”Ÿæ•ˆ
         bSuccess=0;
 
     if(read(STDIN_FILENO,&inbuf,1 /*bytes to read*/)<0)
         bSuccess=0;
 
-    tios.c_lflag|=ICANON;
-    tios.c_lflag|=ECHO;
     if(tcsetattr(STDIN_FILENO, TCSANOW, &tios)<0)
         bSuccess=0;
 

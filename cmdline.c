@@ -1,5 +1,15 @@
 #include <stdio.h>
 #include <string.h>
+#include "term/term.h"
+
+#if defined(_WIN32)
+# include <windows.h>
+# include <conio.h>
+#elif defined(__linux__)
+# include <sys/ioctl.h>
+# include <unistd.h>
+# include <termios.h>
+#endif
 
 #define HELP_MSG \
 "# 支持的命令行概览\n" \
@@ -94,11 +104,69 @@ int parse(int argc, char* argv[]){
 }
 
 // 显示帮助信息(Horizontal & vertical scrollable)
-int prn_help_msg(void){
+void prn_help_msg(void){
+#if defined(_WIN32)
+    if(get_key() == 244){
+        switch(get_key()){
+        case 72:
+            // Up
+                printf("Up");
+            break;
+        case 80:
+            // Down
+                printf("Down");
+            break;
+        case 75:
+            // Left
+                printf("Left");
+            break;
+        case 77:
+            // Right
+                printf("Right");
+            break;
+        default:
+            break;
+        }
+    }
+#elif defined(__linux__)
+    char arrow_key_buf[3];
+    struct termios tios, tios_pause;
+    fflush(stdout);
+
+    tcgetattr(STDIN_FILENO, &tios);
+
+    tios_pause = tios;
+    tios_pause.c_lflag&=~ICANON; // 关闭Canonical模式(这样无须换行即可获得输入)
+    tios_pause.c_lflag&=~ECHO;   // 关闭回显
+    tios_pause.c_cc[VMIN]=1;     // 在非Canonical模式下最少输入1字符即可读取
+    tios_pause.c_cc[VTIME]=0;    // read会一直等待输入,无超时
     
+    tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
+
+    if(read(STDIN_FILENO,&arrow_key_buf,sizeof(arrow_key_buf))==sizeof(arrow_key_buf)){
+        if(arrow_key_buf[0] == '\033' && arrow_key_buf[1] == '['){
+            switch(arrow_key_buf[2]){
+                case 'A':
+                    printf("Up");
+                    break;
+                case 'B':
+                    printf("Down");
+                    break;
+                case 'D':
+                    printf("Left");
+                    break;
+                case 'C':
+                    printf("Right");
+                    break;
+            }
+        }
+    }
+    
+    tcsetattr(STDIN_FILENO, TCSANOW, &tios);
+#endif
 }
 
 int main(int argc, char* argv[]){
-    printf(HELP_MSG);
+    prn_help_msg();
     return 0;
 }
