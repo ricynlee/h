@@ -4,7 +4,8 @@
 #include <errno.h>
 
 int main(){
-    off_t n_byte=0x140000000;
-    truncate("a.txt", n_byte);
-    return errno;
+    int ch;
+    while(ch = getch()){
+        printf("Input %d\n",ch);
+    }
 }

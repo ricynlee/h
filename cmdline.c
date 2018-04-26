@@ -106,23 +106,19 @@ int parse(int argc, char* argv[]){
 // 显示帮助信息(Horizontal & vertical scrollable)
 void prn_help_msg(void){
 #if defined(_WIN32)
-    if(get_key() == 244){
-        switch(get_key()){
+    if(getch() == 224){
+        switch(getch()){
         case 72:
-            // Up
-                printf("Up");
+            printf("Up");
             break;
         case 80:
-            // Down
-                printf("Down");
+            printf("Down");
             break;
         case 75:
-            // Left
-                printf("Left");
+            printf("Left");
             break;
         case 77:
-            // Right
-                printf("Right");
+            printf("Right");
             break;
         default:
             break;
