@@ -163,6 +163,6 @@ void prn_help_msg(void){
 }
 
 int main(int argc, char* argv[]){
-    prn_help_msg();
+    printf(HELP_MSG);
     return 0;
 }
