@@ -128,40 +128,40 @@
     * "colorblind" stands for no distinguishment using color, "foreground" for forground color, and "background" means opposite.
     * By default <COLORDISP> is "colorblind".
   * <PAGEDDISP>: paged
-    * 决定数据是否分页显示.
-    * 默认不分页显示.
+    * Specifiy if data is displayed page by page.
+    * Not paged by default.
 
 * replace <ADDR> <DATA>
 * replace <ADDR> <FILENAME> [<FILEADDR>]
-  > 覆写目标文件的部分数据,尽量原地操作
+  > Rewrite part of target file. In-place if possible. 
   * <ADDR>: @<start>[,<len>] | @<start>-<end>
-    * 定义要被替换的数据段.
-    * 只指定<start>会替换该地址到文件尾的所有数据.
+    * Specify data segment to be replaced.
+    * With only <start> specified, all data after this offset will be replaced.
   * <DATA>: <byte> ... <byte>
-    * <byte>是空格分割的十六进制数据(不带0x前缀).
+    * <byte> is an octet in hex form(w/o 0x prefix).
   * <FILENAME>: <filename>
-    * 指定要替换的数据源文件名.
+    * Specified the replacing source file.
   * <FILEADDR>: @<start>[,<len>] | @<start>-<end>
-    * 定义要用于替换的源文件数据段.
-    * 默认将整个文件用来替换.
-    * 只指定<start>,则源文件数据段是从该地址到源文件尾的所有数据.
+    * Specify replacing data segment in the source file.
+    * By default the whole file is used.
+    * With only <start> specified, replacing data segment is all data after this offset.
 
 * delete <ADDR>
-  > 删除目标文件的一部分,尽量原地操作
+  > Remove part of the target file. In-place if possible.
   * <ADDR>: @<start>[,<end>] | @<start>-<end>
-    * 指定要删除的目标文件数据段.
-    * 只指定<start>会将该地址到文件尾的数据全部删除.
+    * Specify data segment to be removed in the target file.
+    * With only <start> specified, all data after this offset will be removed.
 
 * insert <LOCATOR> <DATA>
 * insert <LOCATOR> <FILENAME> [<FILEADDR>]
-  > 向目标文件中插入数据,尽量原地操作
+  > Add data to the target file. In-place if possible.
   * <LOCATOR>: @<start>
-    * 指定要插入数据的首地址.
-    * "@head"表示插入到文件头,"@tail"表示插入到文件尾.
+    * Specify the initial address of inserted data in the target file.
+    * "@head" stands for offset 0, "@tail" for EOF.
   * <DATA>: <byte> ... <byte>
   * <FILENAME>: <filename>
-    * 指定要插入的数据源文件.
+    * Specify a source file to be inserted to the target file.
   * <FILEADDR>: @<start>[,<len>] | @<start>-<end>
-    * 定义要用于插入的源文件数据段.
-    * 默认插入整个文件.
-    * 只指定<start>,则源文件数据段是从该地址到源文件尾的所有数据.
+    * Specify the data segment in the in the source file to be inserted.
+    * By default the whole source file is inserted.
+    * With only <start> specified, all data in the source file after this offset will be inserted.
