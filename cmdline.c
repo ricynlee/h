@@ -12,7 +12,7 @@
 #endif
 
 #define HELP_MSG \
-"# 支持的命令行概览\n" \
+"# h - A command-line hex editor\n" \
 "\n" \
 "* h version\n" \
 "* h help\n" \
@@ -21,23 +21,23 @@
 "* h file ... delete ...\n" \
 "* h file ... insert ...\n" \
 "\n" \
-"# 详细\n" \
+"# Command-line arguments\n" \
 "\n" \
 "* version\n" \
-"  > 显示版本信息\n" \
+"  > Display version information\n" \
 "\n" \
 "* help\n" \
-"  > 显示命令行帮助\n" \
+"  > Display this help message\n" \
 "\n" \
 "* file <FILENAME>\n" \
-"  > 指定目标文件名\n" \
+"  > Specify the name of the file to be edited (or viewed), i.e. target file\n" \
 "\n" \
 "* print [<ADDR>] [<FORMAT>] [<ENDIAN>] [<ADDRDISP>] [<COLORDISP>] [<PAGEDDISP>]\n" \
-"  > 指定格式显示目标文件内容\n" \
+"  > Display the file's content using specified format\n" \
 "  * <ADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * <start> <len> <end>可以是无符号十进制整数,也可以是0x开头的16进制数据.\n" \
-"    * 默认显示整个文件.\n" \
-"    * 只指定<start>会从该地址显示到文件尾.\n" \
+"    * <start> <len> <end> may be unsigned dec integers, or hex integers starting with 0x.\n" \
+"    * By default, the whole file is displayed.\n" \
+"    * With only <start> field specified, file content between the offset and EOF is displayed.\n" \
 "  * <FORMAT>: bin1|bin8|bin16|bin32|bin64\n" \
 "              oct8|oct16|oct32|oct64\n" \
 "              hex8|hex16|hex32|hex64\n" \
@@ -46,54 +46,54 @@
 "              fix8.d|fix16.d|fix32.d|fix64.d\n" \
 "              ufix8.d|ufix16.d|ufix32.d|ufix64.d\n" \
 "              float|single|double\n" \
-"    * 默认<FORMAT>是\"hex8\".\n" \
-"    * fix表示定点小数,十进制数\"d\"用于描述二进制小数点位置.\n" \
+"    * Default <FORMAT> is \"hex8\".\n" \
+"    * \"fix\" stands for fixed-point decimals, and dec number \"d\" sets the decimal point.\n" \
 "  * <ENDIAN>: big|little\n" \
 "  * <ADDRDISP>: addr\n" \
-"    * 以表格形式显示数据,并标出地址.\n" \
-"    * 默认不标出数据地址.\n" \
+"    * Addr is displayed along with data (in the form of a table).\n" \
+"    * By default, no addr is displayed.\n" \
 "  * <COLORDISP>: colorblind|background|foreground\n" \
-"    * 决定相邻数据如何区别显示.\n" \
-"    * \"colorblind\"表示不以颜色区分,\"foreground\"表示以前景色区分,\"background\"表示以背景色区分.\n" \
-"    * 默认的<COLORDISP>是\"colorblind\".\n" \
+"    * Specifies how neighboring data is distinguished.\n" \
+"    * \"colorblind\" stands for no distinguishment using color, \"foreground\" for forground color, and \"background\" for background color.\n" \
+"    * By default <COLORDISP> is \"colorblind\".\n" \
 "  * <PAGEDDISP>: paged\n" \
-"    * 决定数据是否分页显示.\n" \
-"    * 默认不分页显示.\n" \
+"    * Specifiy if data is displayed page by page.\n" \
+"    * Not paged by default.\n" \
 "\n" \
 "* replace <ADDR> <DATA>\n" \
 "* replace <ADDR> <FILENAME> [<FILEADDR>]\n" \
-"  > 覆写目标文件的部分数据,尽量原地操作\n" \
+"  > Rewrite part of target file. In-place if possible.\n" \
 "  * <ADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * 定义要被替换的数据段.\n" \
-"    * 只指定<start>会替换该地址到文件尾的所有数据.\n" \
+"    * Specify data segment to be replaced.\n" \
+"    * With only <start> specified, all data after this offset will be replaced.\n" \
 "  * <DATA>: <byte> ... <byte>\n" \
-"    * <byte>是空格分割的十六进制数据(不带0x前缀).\n" \
+"    * <byte> is an octet in hex form(w/o 0x prefix).\n" \
 "  * <FILENAME>: <filename>\n" \
-"    * 指定要替换的数据源文件名.\n" \
+"    * Specified the replacing source file.\n" \
 "  * <FILEADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * 定义要用于替换的源文件数据段.\n" \
-"    * 默认将整个文件用来替换.\n" \
-"    * 只指定<start>,则源文件数据段是从该地址到源文件尾的所有数据.\n" \
+"    * Specify replacing data segment in the source file.\n" \
+"    * By default the whole file is used.\n" \
+"    * With only <start> specified, replacing data segment is all data after this offset.\n" \
 "\n" \
 "* delete <ADDR>\n" \
-"  > 删除目标文件的一部分,尽量原地操作\n" \
+"  > Remove part of the target file. In-place if possible.\n" \
 "  * <ADDR>: @<start>[,<end>] | @<start>-<end>\n" \
-"    * 指定要删除的目标文件数据段.\n" \
-"    * 只指定<start>会将该地址到文件尾的数据全部删除.\n" \
+"    * Specify data segment to be removed in the target file.\n" \
+"    * With only <start> specified, all data after this offset will be removed.\n" \
 "\n" \
 "* insert <LOCATOR> <DATA>\n" \
 "* insert <LOCATOR> <FILENAME> [<FILEADDR>]\n" \
-"  > 向目标文件中插入数据,尽量原地操作\n" \
+"  > Add data to the target file. In-place if possible.\n" \
 "  * <LOCATOR>: @<start>\n" \
-"    * 指定要插入数据的首地址.\n" \
-"    * \"@head\"表示插入到文件头,\"@tail\"表示插入到文件尾.\n" \
+"    * Specify the initial address of inserted data in the target file.\n" \
+"    * \"@head\" stands for offset 0, \"@tail\" for EOF.\n" \
 "  * <DATA>: <byte> ... <byte>\n" \
 "  * <FILENAME>: <filename>\n" \
-"    * 指定要插入的数据源文件.\n" \
+"    * Specify a source file to be inserted to the target file.\n" \
 "  * <FILEADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * 定义要用于插入的源文件数据段.\n" \
-"    * 默认插入整个文件.\n" \
-"    * 只指定<start>,则源文件数据段是从该地址到源文件尾的所有数据.\n"
+"    * Specify the data segment in the in the source file to be inserted.\n" \
+"    * By default the whole source file is inserted.\n" \
+"    * With only <start> specified, all data in the source file after this offset will be inserted.\n"
 
 // 解析命令行参数
 int parse(int argc, char* argv[]){
