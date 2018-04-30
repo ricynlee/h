@@ -1,6 +1,7 @@
 ﻿#include <stdio.h>
 #include <stdarg.h>
 #include "term.h"
+#include 
 
 #if defined(_WIN32)
 # include <windows.h>
@@ -170,3 +171,7 @@ int pause(void){
     return (bSuccess ? (int)inbuf : 0);
 #endif
 }
+
+// 清除终端/控制台内容
+// int clear_term(void);
+//

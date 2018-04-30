@@ -101,7 +101,7 @@
   > Display this help message
 
 * file <FILENAME>
-  > Specify the name of the file to be edited (or viewed), i.e. target file
+  > Specify the name of the file to be edited (or viewed)
 
 * print [<ADDR>] [<FORMAT>] [<ENDIAN>] [<ADDRDISP>] [<COLORDISP>] [<PAGEDDISP>]
   > Display the file's content using specified format
@@ -117,7 +117,7 @@
               fix8.d|fix16.d|fix32.d|fix64.d
               ufix8.d|ufix16.d|ufix32.d|ufix64.d
               float|single|double
-    * Default <FORMAT> is "hex8".
+    * By default, <FORMAT> is "hex8".
     * "fix" stands for fixed-point decimals, and dec number "d" sets the decimal point.
   * <ENDIAN>: big|little
   * <ADDRDISP>: addr
@@ -125,7 +125,7 @@
     * By default, no addr is displayed.
   * <COLORDISP>: colorblind|background|foreground
     * Specifies how neighboring data is distinguished.
-    * "colorblind" stands for no distinguishment using color, "foreground" for forground color, and "background" for background color
+    * "colorblind" stands for no distinguishment using color, "foreground" for forground color, and "background" means opposite.
     * By default <COLORDISP> is "colorblind".
   * <PAGEDDISP>: paged
     * Specifiy if data is displayed page by page.
