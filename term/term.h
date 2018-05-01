@@ -98,6 +98,6 @@
 extern int  get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
 extern void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...);
 extern int  pause(void);
-extern int clear_term(void);
+extern void clear_term(void);
 
 #endif  // _H_TERM_H

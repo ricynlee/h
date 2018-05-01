@@ -109,11 +109,11 @@ void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...)
 # endif
 
     if(FC_DEFAULT==fc && BC_DEFAULT==bc){
-        printf("\x1b[0m");
+        printf("\033[0m");
     }else if((FC_DEFAULT!=fc && BC_DEFAULT!=bc)){
-        printf("\x1b[%d;%dm",fc,bc);
+        printf("\033[%d;%dm",fc,bc);
     }else{ // One in fc/bc is 0
-        printf("\x1b[%dm",fc|bc);
+        printf("\033[%dm",fc|bc);
     }
 
 # ifdef _WIN32
@@ -129,7 +129,7 @@ void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...)
     if(bSuccess){
 # endif
 
-    printf("\x1b[0m");
+    printf("\033[0m");
 
 # ifdef _WIN32
     }
@@ -174,11 +174,39 @@ int pause(void){
 // 清除终端/控制台内容, and move cursor to upper left corner
 // int clear_term(void);
 // Returned 0 for success, -1 for failure
-int clear_term(void){
+void clear_term(void){
 #if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
-    // For Windows consoles that do not support VT esc seq
+    COORD   coordScreen = { 0, 0 };
+    BOOL    bSuccess = 1;
+    DWORD   cCharsWritten;
+    DWORD   dwConSize;
+    HANDLE  hConsole;
+    CONSOLE_SCREEN_BUFFER_INFO  csbi;
+
+    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+
+    if(!GetConsoleScreenBufferInfo( hConsole, &csbi ))
+        return;
+
+    dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
+
+    if(!FillConsoleOutputCharacter( hConsole, (TCHAR) ' ',
+        dwConSize, coordScreen, &cCharsWritten ))
+        return;
+
+    if(!GetConsoleScreenBufferInfo( hConsole, &csbi ))
+        return;
+
+    if(!FillConsoleOutputAttribute( hConsole, csbi.wAttributes,
+        dwConSize, coordScreen, &cCharsWritten ))
+        return;
+
+    if(!SetConsoleCursorPosition( hConsole, coordScreen ))
+        return;
+
+    return;
 #elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
-    printf("\033[2J\033[H");
-    return 0;
+    printf(" \033[2J\033[H");
+    return;
 #endif
 }

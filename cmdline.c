@@ -111,12 +111,12 @@ int parse(int argc, char* argv[]){
 typedef enum{
     AK_EXCEPT       = -1,
     AK_NON_ARROW    = 0,
-    
+
     AK_UP,
     AK_DOWN,
     AK_LEFT,
     AK_RIGHT,
-    
+
     AK_BUTT
 }ARROW_KEY;
 
@@ -155,7 +155,7 @@ static int get_arrow_key(void){
     tios_pause.c_cc[VTIME]=0;    // read会一直等待输入,无超时
 
     tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
-    
+
     if(read(STDIN_FILENO,&arrow_key_buf,sizeof(arrow_key_buf))==sizeof(arrow_key_buf)){
         if(arrow_key_buf[0] == '\033' && arrow_key_buf[1] == '['){
             switch(arrow_key_buf[2]){
@@ -180,9 +180,9 @@ static int get_arrow_key(void){
     }else{
         ret = AK_NON_ARROW;
     }
-    
+
     tcsetattr(STDIN_FILENO, TCSANOW, &tios);
-    
+
     return ret;
 #endif
 
@@ -195,23 +195,36 @@ static int get_arrow_key(void){
 void prn_help_msg(void){
     int max_x = 0, max_y = sizeof(HELP_MSG)/sizeof(char*)-1; // Size of HELP_MSG
     for(int i=0; i<=max_y; i++){
-        max_x = MAX((signed)strlen(HELP_MSG[i])-1, max_x);
+        max_x = MAX((signed)(strlen(HELP_MSG[i])-1), max_x);
     }
 
     int tsz_x, tsz_y; // Size of current terminal/console
     int pos_x = 0, pos_y = 0; // Display origin of HELP_MSG
+    int prev_tsz_x, prev_tsz_y, prev_pos_x, prev_pos_y=-1;
 
     while(1){ // Checking if arrow key pressed
         get_term_size(&tsz_x, &tsz_y);
-        
-        clear_term();
-        
-        for(int i=pos_y; i<=MIN(max_y, pos_y+tsz_y-2); i++){
-            printf("%-.*s\n", tsz_x, HELP_MSG[i] + MIN(strlen(HELP_MSG[i]), pos_x));
+
+        if(pos_x!=prev_pos_x || pos_y!=prev_pos_y || tsz_x!=prev_tsz_x || tsz_y!=prev_tsz_y){
+            clear_term();
+
+            for(int i=pos_y; i<=MIN(max_y, pos_y+tsz_y-2); i++){
+#if defined(__WIN32)
+                printf("%-.*s\n", tsz_x-1, HELP_MSG[i] + MIN(strlen(HELP_MSG[i]), pos_x));
+#elif defined(__linux__)
+                printf("%-.*s\n", tsz_x, HELP_MSG[i] + MIN(strlen(HELP_MSG[i]), pos_x));
+#endif
+            }
+
+            prev_pos_x = pos_x;
+            prev_pos_y = pos_y;
+            prev_tsz_x = tsz_x;
+            prev_tsz_y = tsz_y;
+
+            printf_color(FC_DEFAULT, BC_DARKGREEN, "USE ARROW KEYS TO SCROLL");
         }
-        
-        printf("\033[42mUSE ARROW KEYS TO SCROLL\033[0m");
-        
+
+
         switch( get_arrow_key() ){
             case AK_UP:
                 if(pos_y>0)
@@ -226,7 +239,7 @@ void prn_help_msg(void){
                     pos_x--;
                 break;
             case AK_RIGHT:
-                if(pos_x<max_x-tsz_x+1)
+                if(pos_x<max_x-tsz_x+2)
                     pos_x++;
                 break;
             default:
@@ -235,8 +248,6 @@ void prn_help_msg(void){
         }
     }
 }
-
-
 
 int main(int argc, char* argv[]){
     prn_help_msg();
