@@ -57,7 +57,7 @@ char* HELP_MSG[] = {
     "    * By default, no addr is displayed.",
     "  * <COLORDISP>: colorblind|background|foreground",
     "    * Specifies how neighboring data is distinguished.",
-    "    * \"colorblind\" stands for no distinguishment using color, \"foreground\" for forground color, and \"background\" for background color.",
+    "    * \"colorblind\" stands for no distinguishment using color, and try \"foreground\" and \"background\".",
     "    * By default <COLORDISP> is \"colorblind\".",
     "  * <PAGEDDISP>: paged",
     "    * Specifiy if data is displayed page by page.",
@@ -142,6 +142,7 @@ static int get_arrow_key(void){
 #elif defined(__linux__)
     char arrow_key_buf[3];
     struct termios tios, tios_pause;
+    int ret;
 
     fflush(stdout);
 
@@ -154,31 +155,37 @@ static int get_arrow_key(void){
     tios_pause.c_cc[VTIME]=0;    // read会一直等待输入,无超时
 
     tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
-
+    
     if(read(STDIN_FILENO,&arrow_key_buf,sizeof(arrow_key_buf))==sizeof(arrow_key_buf)){
         if(arrow_key_buf[0] == '\033' && arrow_key_buf[1] == '['){
             switch(arrow_key_buf[2]){
                 case 'A':
-                    return AK_UP;
+                    ret = AK_UP;
+                    break;
                 case 'B':
-                    return AK_DOWN;
+                    ret = AK_DOWN;
+                    break;
                 case 'D':
-                    return AK_LEFT;
+                    ret = AK_LEFT;
+                    break;
                 case 'C':
-                    return AK_RIGHT;
+                    ret = AK_RIGHT;
+                    break;
                 default:
-                    return AK_NON_ARROW;
+                    ret = AK_NON_ARROW;
             }
         }else{
-            return AK_NON_ARROW;
+            ret = AK_NON_ARROW;
         }
     }else{
-        return AK_NON_ARROW;
+        ret = AK_NON_ARROW;
     }
-
-    tcsetattr(STDIN_FILENO, TCSANOW, &tios);
-#endif
     
+    tcsetattr(STDIN_FILENO, TCSANOW, &tios);
+    
+    return ret;
+#endif
+
     return AK_EXCEPT;
 }
 
@@ -188,35 +195,42 @@ static int get_arrow_key(void){
 void prn_help_msg(void){
     int max_x = 0, max_y = sizeof(HELP_MSG)/sizeof(char*)-1; // Size of HELP_MSG
     for(int i=0; i<=max_y; i++){
-        tmp_x = MAX(strlen(HELP_MSG[i])-1, max_x);
+        max_x = MAX((signed)strlen(HELP_MSG[i])-1, max_x);
     }
 
     int tsz_x, tsz_y; // Size of current terminal/console
     int pos_x = 0, pos_y = 0; // Display origin of HELP_MSG
 
-
     while(1){ // Checking if arrow key pressed
         get_term_size(&tsz_x, &tsz_y);
         
-        for(int i=pos_x; i<=max_y; i++){
-            printf("%s\n", HELP_MSG[i] + MIN(strlen(HELP_MSG[i]), pos_x));
-            max_x = strlen(HELP_MSG[i])-1>max_x ? strlen(HELP_MSG[i])-1 : max_x;
+        clear_term();
+        
+        for(int i=pos_y; i<=MIN(max_y, pos_y+tsz_y-2); i++){
+            printf("%-.*s\n", tsz_x, HELP_MSG[i] + MIN(strlen(HELP_MSG[i]), pos_x));
         }
+        
+        printf("\033[42mUSE ARROW KEYS TO SCROLL\033[0m");
         
         switch( get_arrow_key() ){
             case AK_UP:
-                pos_y--;
+                if(pos_y>0)
+                    pos_y--;
                 break;
             case AK_DOWN:
-                pos_y++;
+                if(pos_y<max_y-tsz_y+2)
+                    pos_y++;
                 break;
             case AK_LEFT:
-                pos_x--;
+                if(pos_x>0)
+                    pos_x--;
                 break;
             case AK_RIGHT:
-                pos_x++;
+                if(pos_x<max_x-tsz_x+1)
+                    pos_x++;
                 break;
             default:
+                printf("\n");
                 return;
         }
     }

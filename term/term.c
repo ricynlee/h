@@ -1,7 +1,6 @@
 ﻿#include <stdio.h>
 #include <stdarg.h>
 #include "term.h"
-#include 
 
 #if defined(_WIN32)
 # include <windows.h>
@@ -172,6 +171,14 @@ int pause(void){
 #endif
 }
 
-// 清除终端/控制台内容
+// 清除终端/控制台内容, and move cursor to upper left corner
 // int clear_term(void);
-//
+// Returned 0 for success, -1 for failure
+int clear_term(void){
+#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+    // For Windows consoles that do not support VT esc seq
+#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+    printf("\033[2J\033[H");
+    return 0;
+#endif
+}
