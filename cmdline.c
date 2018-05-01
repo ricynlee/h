@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "term/term.h"
+#include <malloc.h>
+#include <stdlib.h>
 
 #if defined(_WIN32)
 # include <windows.h>
@@ -11,89 +13,91 @@
 # include <termios.h>
 #endif
 
-#define HELP_MSG \
-"# h - A command-line hex editor\n" \
-"\n" \
-"* h version\n" \
-"* h help\n" \
-"* h file ... print ...\n" \
-"* h file ... replace ...\n" \
-"* h file ... delete ...\n" \
-"* h file ... insert ...\n" \
-"\n" \
-"# Command-line arguments\n" \
-"\n" \
-"* version\n" \
-"  > Display version information\n" \
-"\n" \
-"* help\n" \
-"  > Display this help message\n" \
-"\n" \
-"* file <FILENAME>\n" \
-"  > Specify the name of the file to be edited (or viewed), i.e. target file\n" \
-"\n" \
-"* print [<ADDR>] [<FORMAT>] [<ENDIAN>] [<ADDRDISP>] [<COLORDISP>] [<PAGEDDISP>]\n" \
-"  > Display the file's content using specified format\n" \
-"  * <ADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * <start> <len> <end> may be unsigned dec integers, or hex integers starting with 0x.\n" \
-"    * By default, the whole file is displayed.\n" \
-"    * With only <start> field specified, file content between the offset and EOF is displayed.\n" \
-"  * <FORMAT>: bin1|bin8|bin16|bin32|bin64\n" \
-"              oct8|oct16|oct32|oct64\n" \
-"              hex8|hex16|hex32|hex64\n" \
-"              int8|int16|int32|int64\n" \
-"              uint8|uint16|uint32|uint64\n" \
-"              fix8.d|fix16.d|fix32.d|fix64.d\n" \
-"              ufix8.d|ufix16.d|ufix32.d|ufix64.d\n" \
-"              float|single|double\n" \
-"    * Default <FORMAT> is \"hex8\".\n" \
-"    * \"fix\" stands for fixed-point decimals, and dec number \"d\" sets the decimal point.\n" \
-"  * <ENDIAN>: big|little\n" \
-"  * <ADDRDISP>: addr\n" \
-"    * Addr is displayed along with data (in the form of a table).\n" \
-"    * By default, no addr is displayed.\n" \
-"  * <COLORDISP>: colorblind|background|foreground\n" \
-"    * Specifies how neighboring data is distinguished.\n" \
-"    * \"colorblind\" stands for no distinguishment using color, \"foreground\" for forground color, and \"background\" for background color.\n" \
-"    * By default <COLORDISP> is \"colorblind\".\n" \
-"  * <PAGEDDISP>: paged\n" \
-"    * Specifiy if data is displayed page by page.\n" \
-"    * Not paged by default.\n" \
-"\n" \
-"* replace <ADDR> <DATA>\n" \
-"* replace <ADDR> <FILENAME> [<FILEADDR>]\n" \
-"  > Rewrite part of target file. In-place if possible.\n" \
-"  * <ADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * Specify data segment to be replaced.\n" \
-"    * With only <start> specified, all data after this offset will be replaced.\n" \
-"  * <DATA>: <byte> ... <byte>\n" \
-"    * <byte> is an octet in hex form(w/o 0x prefix).\n" \
-"  * <FILENAME>: <filename>\n" \
-"    * Specified the replacing source file.\n" \
-"  * <FILEADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * Specify replacing data segment in the source file.\n" \
-"    * By default the whole file is used.\n" \
-"    * With only <start> specified, replacing data segment is all data after this offset.\n" \
-"\n" \
-"* delete <ADDR>\n" \
-"  > Remove part of the target file. In-place if possible.\n" \
-"  * <ADDR>: @<start>[,<end>] | @<start>-<end>\n" \
-"    * Specify data segment to be removed in the target file.\n" \
-"    * With only <start> specified, all data after this offset will be removed.\n" \
-"\n" \
-"* insert <LOCATOR> <DATA>\n" \
-"* insert <LOCATOR> <FILENAME> [<FILEADDR>]\n" \
-"  > Add data to the target file. In-place if possible.\n" \
-"  * <LOCATOR>: @<start>\n" \
-"    * Specify the initial address of inserted data in the target file.\n" \
-"    * \"@head\" stands for offset 0, \"@tail\" for EOF.\n" \
-"  * <DATA>: <byte> ... <byte>\n" \
-"  * <FILENAME>: <filename>\n" \
-"    * Specify a source file to be inserted to the target file.\n" \
-"  * <FILEADDR>: @<start>[,<len>] | @<start>-<end>\n" \
-"    * Specify the data segment in the in the source file to be inserted.\n" \
-"    * By default the whole source file is inserted.\n" \
-"    * With only <start> specified, all data in the source file after this offset will be inserted.\n"
+#define HELP_MSG_MAX_LINES 128
+char* HELP_MSG[] = {
+    "# h - A command-line hex editor",
+    "",
+    "* h version",
+    "* h help",
+    "* h file ... print ...",
+    "* h file ... replace ...",
+    "* h file ... delete ...",
+    "* h file ... insert ...",
+    "",
+    "# Command-line arguments",
+    "",
+    "* version",
+    "  > Display version information",
+    "",
+    "* help",
+    "  > Display this help message",
+    "",
+    "* file <FILENAME>",
+    "  > Specify the name of the file to be edited (or viewed), i.e. target file",
+    "",
+    "* print [<ADDR>] [<FORMAT>] [<ENDIAN>] [<ADDRDISP>] [<COLORDISP>] [<PAGEDDISP>]",
+    "  > Display the file's content using specified format",
+    "  * <ADDR>: @<start>[,<len>] | @<start>-<end>",
+    "    * <start> <len> <end> may be unsigned dec integers, or hex integers starting with 0x.",
+    "    * By default, the whole file is displayed.",
+    "    * With only <start> field specified, file content between the offset and EOF is displayed.",
+    "  * <FORMAT>: bin1|bin8|bin16|bin32|bin64",
+    "              oct8|oct16|oct32|oct64",
+    "              hex8|hex16|hex32|hex64",
+    "              int8|int16|int32|int64",
+    "              uint8|uint16|uint32|uint64",
+    "              fix8.d|fix16.d|fix32.d|fix64.d",
+    "              ufix8.d|ufix16.d|ufix32.d|ufix64.d",
+    "              float|single|double",
+    "    * Default <FORMAT> is,\"hex8\".",
+    "    * \"fix\" stands for fixed-point decimals, and dec number \"d\" sets the decimal point.",
+    "  * <ENDIAN>: big|little",
+    "  * <ADDRDISP>: addr",
+    "    * Addr is displayed along with data (in the form of a table).",
+    "    * By default, no addr is displayed.",
+    "  * <COLORDISP>: colorblind|background|foreground",
+    "    * Specifies how neighboring data is distinguished.",
+    "    * \"colorblind\" stands for no distinguishment using color, and try \"foreground\" and \"background\".",
+    "    * By default <COLORDISP> is \"colorblind\".",
+    "  * <PAGEDDISP>: paged",
+    "    * Specifiy if data is displayed page by page.",
+    "    * Not paged by default.",
+    "",
+    "* replace <ADDR> <DATA>",
+    "* replace <ADDR> <FILENAME> [<FILEADDR>]",
+    "  > Rewrite part of target file. In-place if possible.",
+    "  * <ADDR>: @<start>[,<len>] | @<start>-<end>",
+    "    * Specify data segment to be replaced.",
+    "    * With only <start> specified, all data after this offset will be replaced.",
+    "  * <DATA>: <byte> ... <byte>",
+    "    * <byte> is an octet in hex form(w/o 0x prefix).",
+    "  * <FILENAME>: <filename>",
+    "    * Specified the replacing source file.",
+    "  * <FILEADDR>: @<start>[,<len>] | @<start>-<end>",
+    "    * Specify replacing data segment in the source file.",
+    "    * By default the whole file is used.",
+    "    * With only <start> specified, replacing data segment is all data after this offset.",
+    "",
+    "* delete <ADDR>",
+    "  > Remove part of the target file. In-place if possible.",
+    "  * <ADDR>: @<start>[,<end>] | @<start>-<end>",
+    "    * Specify data segment to be removed in the target file.",
+    "    * With only <start> specified, all data after this offset will be removed.",
+    "",
+    "* insert <LOCATOR> <DATA>",
+    "* insert <LOCATOR> <FILENAME> [<FILEADDR>]",
+    "  > Add data to the target file. In-place if possible.",
+    "  * <LOCATOR>: @<start>",
+    "    * Specify the initial address of inserted data in the target file.",
+    "    * \"@head\" stands for offset 0, \"@tail\" for EOF.",
+    "  * <DATA>: <byte> ... <byte>",
+    "  * <FILENAME>: <filename>",
+    "    * Specify a source file to be inserted to the target file.",
+    "  * <FILEADDR>: @<start>[,<len>] | @<start>-<end>",
+    "    * Specify the data segment in the in the source file to be inserted.",
+    "    * By default the whole source file is inserted.",
+    "    * With only <start> specified, all data in the source file after this offset will be inserted."
+};
 
 // 解析命令行参数
 int parse(int argc, char* argv[]){
@@ -103,30 +107,43 @@ int parse(int argc, char* argv[]){
     return 0;
 }
 
-// 显示帮助信息(Horizontal & vertical scrollable)
-void prn_help_msg(void){
+// Private enum for get_arrow_key
+typedef enum{
+    AK_EXCEPT       = -1,
+    AK_NON_ARROW    = 0,
+    
+    AK_UP,
+    AK_DOWN,
+    AK_LEFT,
+    AK_RIGHT,
+    
+    AK_BUTT
+}ARROW_KEY;
+
+// Suspend the process, until a key is pressed
+static int get_arrow_key(void){
 #if defined(_WIN32)
     if(getch() == 224){
         switch(getch()){
         case 72:
-            printf("Up");
-            break;
+            return AK_UP;
         case 80:
-            printf("Down");
-            break;
+            return AK_DOWN;
         case 75:
-            printf("Left");
-            break;
+            return AK_LEFT;
         case 77:
-            printf("Right");
-            break;
+            return AK_RIGHT;
         default:
-            break;
+            return AK_NON_ARROW;
         }
+    }else{
+        return AK_NON_ARROW;
     }
 #elif defined(__linux__)
     char arrow_key_buf[3];
     struct termios tios, tios_pause;
+    int ret;
+
     fflush(stdout);
 
     tcgetattr(STDIN_FILENO, &tios);
@@ -136,33 +153,92 @@ void prn_help_msg(void){
     tios_pause.c_lflag&=~ECHO;   // 关闭回显
     tios_pause.c_cc[VMIN]=1;     // 在非Canonical模式下最少输入1字符即可读取
     tios_pause.c_cc[VTIME]=0;    // read会一直等待输入,无超时
-    
-    tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
 
+    tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
+    
     if(read(STDIN_FILENO,&arrow_key_buf,sizeof(arrow_key_buf))==sizeof(arrow_key_buf)){
         if(arrow_key_buf[0] == '\033' && arrow_key_buf[1] == '['){
             switch(arrow_key_buf[2]){
                 case 'A':
-                    printf("Up");
+                    ret = AK_UP;
                     break;
                 case 'B':
-                    printf("Down");
+                    ret = AK_DOWN;
                     break;
                 case 'D':
-                    printf("Left");
+                    ret = AK_LEFT;
                     break;
                 case 'C':
-                    printf("Right");
+                    ret = AK_RIGHT;
                     break;
+                default:
+                    ret = AK_NON_ARROW;
             }
+        }else{
+            ret = AK_NON_ARROW;
         }
+    }else{
+        ret = AK_NON_ARROW;
     }
     
     tcsetattr(STDIN_FILENO, TCSANOW, &tios);
+    
+    return ret;
 #endif
+
+    return AK_EXCEPT;
 }
 
+#define MIN(x,y) ((x)<(y)?(x):(y))
+#define MAX(x,y) ((x)>(y)?(x):(y))
+// 显示帮助信息(Horizontal & vertical scrollable with arrow keys)
+void prn_help_msg(void){
+    int max_x = 0, max_y = sizeof(HELP_MSG)/sizeof(char*)-1; // Size of HELP_MSG
+    for(int i=0; i<=max_y; i++){
+        max_x = MAX((signed)strlen(HELP_MSG[i])-1, max_x);
+    }
+
+    int tsz_x, tsz_y; // Size of current terminal/console
+    int pos_x = 0, pos_y = 0; // Display origin of HELP_MSG
+
+    while(1){ // Checking if arrow key pressed
+        get_term_size(&tsz_x, &tsz_y);
+        
+        clear_term();
+        
+        for(int i=pos_y; i<=MIN(max_y, pos_y+tsz_y-2); i++){
+            printf("%-.*s\n", tsz_x, HELP_MSG[i] + MIN(strlen(HELP_MSG[i]), pos_x));
+        }
+        
+        printf("\033[42mUSE ARROW KEYS TO SCROLL\033[0m");
+        
+        switch( get_arrow_key() ){
+            case AK_UP:
+                if(pos_y>0)
+                    pos_y--;
+                break;
+            case AK_DOWN:
+                if(pos_y<max_y-tsz_y+2)
+                    pos_y++;
+                break;
+            case AK_LEFT:
+                if(pos_x>0)
+                    pos_x--;
+                break;
+            case AK_RIGHT:
+                if(pos_x<max_x-tsz_x+1)
+                    pos_x++;
+                break;
+            default:
+                printf("\n");
+                return;
+        }
+    }
+}
+
+
+
 int main(int argc, char* argv[]){
-    printf(HELP_MSG);
+    prn_help_msg();
     return 0;
 }
