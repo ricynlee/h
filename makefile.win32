@@ -1,2 +1,8 @@
-main.exe:./term/term.c ./file/file.c
-	gcc -o main.exe main.c $^ -D_FILE_OFFSET_BITS=64 -D_WIN32_USE_VTES=0
+main.exe:./term/term.c ./file/file.c main.c
+	gcc -o main.exe $^ -D_FILE_OFFSET_BITS=64 -D_WIN32_USE_VTES=0
+
+./term/term.c:./term/term.h
+	@echo.
+
+./file/file.c:./file/file.h
+	@echo.
