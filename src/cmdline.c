@@ -122,6 +122,10 @@ char* HELP_MSG[] = {
 };
 
 // 解析命令行参数
+/*
+ h version
+ h
+ */
 int parse(int argc, char* argv[]){
     for(int i=0;i<argc;i++){
         // strcmp(argv[i],"--");
