@@ -243,7 +243,7 @@ void prn_help_msg(void){
             prev_tsz_x = tsz_x;
             prev_tsz_y = tsz_y;
 
-            printf_color(FC_DEFAULT, BC_DARKGREEN, "USE ARROW KEYS TO SCROLL");
+            printf_color(FC_DEFAULT, BC_DARKGREEN, "PRESS ARROW KEYS TO SCROLL");
         }
 
 
