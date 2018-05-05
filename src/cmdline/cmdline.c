@@ -46,7 +46,7 @@ int parse(int argc, char* argv[]){
     if(STREQU(argv[0], "h"))
         return -1;
     for(int i=1;i<argc;i++){
-        if(STREQU(argv[i], "version"))
+        if(STREQU(argv[i], "version")){}
     }
     return 0;
 }
