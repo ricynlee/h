@@ -35,5 +35,9 @@ Linux下,在CFLAGS开启-std=c99时,会警告implicit declaration 'truncate64'/'
 **operation**
 命令行各功能的具体实现
 
+**help_msg**
+一个没有什么卵用的、支持方向键翻页的命令行帮助界面
+
 **main**
-不要被名字欺骗,这是临时测试的程序
+不要被名字欺骗,这目前是测试模块
+
