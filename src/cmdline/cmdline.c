@@ -23,6 +23,7 @@ SOFTWARE.
 #include <string.h>
 #include "../version.h"
 #include "help_msg.h"
+#include "../operation.h"
 
 // 解析命令行参数
 #define STREQU(s1, s2) (strcmp( (s1), (s2) ) == 0)

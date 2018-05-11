@@ -68,7 +68,7 @@ static char* HELP_MSG[] = {
     "              uint8|uint16|uint32|uint64",
     "              fix8.d|fix16.d|fix32.d|fix64.d",
     "              ufix8.d|ufix16.d|ufix32.d|ufix64.d",
-    "              float|single|double",
+    "              float|float32|single|double|float64",
     "    * Default <FORMAT> is,\"hex8\".",
     "    * \"fix\" stands for fixed-point decimals, and dec number \"d\" sets the decimal point.",
     "  * <ENDIAN>: big|little",

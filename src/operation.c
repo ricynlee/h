@@ -20,3 +20,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
  */
 
+#include <stdint.h>
+#include "operation.h"
+
+#define MAX_FILENAME_LEN 256
+
+// types
+typedef FILENAME[MAX_FILENAME_LEN];
+
+typedef struct{
+    size_t  start;
+    union{
+        size_t  len;
+        size_t  end;
+    };
+}ADDR;
+
+typedef struct{
+    uint16_t base:3;
+    uint16_t bitwidth:3; // 2's exponent
+    int16_t  frac:10; // binary fractional bits
+}FORMAT;
+
+// parameters
+struct {
+    char file[MAX_FILE_NAME_LEN];
+    struct{
+        ADDR    
+    }print;
+}param;

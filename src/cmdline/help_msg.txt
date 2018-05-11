@@ -31,7 +31,7 @@
               uint8|uint16|uint32|uint64
               fix8.d|fix16.d|fix32.d|fix64.d
               ufix8.d|ufix16.d|ufix32.d|ufix64.d
-              float|single|double
+              float|float32|single|double|float64
     * 默认<FORMAT>是"hex8".
     * fix表示定点小数,十进制数"d"用于描述二进制小数点位置.
   * <ENDIAN>: big|little
@@ -116,7 +116,7 @@
               uint8|uint16|uint32|uint64
               fix8.d|fix16.d|fix32.d|fix64.d
               ufix8.d|ufix16.d|ufix32.d|ufix64.d
-              float|single|double
+              float|float32|single|double|float64
     * By default, <FORMAT> is "hex8".
     * "fix" stands for fixed-point decimals, and dec number "d" sets the decimal point.
   * <ENDIAN>: big|little
