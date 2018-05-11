@@ -25,29 +25,28 @@ SOFTWARE.
 #include "help_msg.h"
 
 // 解析命令行参数
-/*
-Acceptable Variable Formats
-$FILENAME
-$LONG
-$BYTE_ARRAY
-
-Acceptable Pattern Units
-1 version
-2 help
-3 file $FILE
-4 print
-5 print @$
-
- */
-
 #define STREQU(s1, s2) (strcmp( (s1), (s2) ) == 0)
  
 int parse(int argc, char* argv[]){
     if(STREQU(argv[0], "h"))
-        return -1;
-    for(int i=1;i<argc;i++){
-        if(STREQU(argv[i], "version")){}
+        return (-1);
+
+    if(argc==1)
+        return 0;
+
+    if(STREQU(argv[1], "version" && argc==2)){
+        return 1;
+    }else
+    if(STREQU(argv[1], "help" && argc==2)){
+        return 2;
+    }else
+    if(STREQU(argv[1], "file")){
+        
     }
+    else{
+        return (-1);
+    }
+
     return 0;
 }
 
