@@ -68,8 +68,11 @@ int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
 // 可设置颜色的printf
 // void printf_color(FOREGROND_COLOR fc, BACKGROUND_COLOR bc, ...);
 //
-void printf_color(/*in*/ FC fc, /*in*/ BC bc, /*in*/ const char* fmt, /*in*/...){
+void printf_color(/*in*/ int fc, /*in*/ int bc, /*in*/ const char* fmt, /*in*/...){
 #if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+# define FC_MASK 0x0000000F
+# define BC_MASK 0x000000F0
+
 	HANDLE  hStdout;
 	WORD    wOldColorAttrs;
     BOOL    bSuccess;
