@@ -37,7 +37,6 @@ SOFTWARE.
 #define MAX(x,y) ((x)>(y)?(x):(y))
 
 // 获取终端/控制台大小(以字符计)
-// int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
 // 返回值:返回0为成功,否则失败.
 int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
     if((!ref_w) || (!ref_h))
@@ -66,9 +65,7 @@ int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
 }
 
 // 可设置颜色的printf
-// void printf_color(FOREGROND_COLOR fc, BACKGROUND_COLOR bc, ...);
-//
-void printf_color(/*in*/ int fc, /*in*/ int bc, /*in*/ const char* fmt, /*in*/...){
+void printf_color(/*in*/ int fg, /*in*/ int bg, /*in*/ const char* fmt, /*in*/...){
 #if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
 # define FC_MASK 0x0000000F
 # define BC_MASK 0x000000F0
@@ -85,11 +82,11 @@ void printf_color(/*in*/ int fc, /*in*/ int bc, /*in*/ const char* fmt, /*in*/..
     }
     if(bSuccess){
         wOldColorAttrs = csbiInfo.wAttributes;
-        if(FC_DEFAULT==fc)
-            fc=wOldColorAttrs&FC_MASK;
-        if(BC_DEFAULT==bc)
-            bc=wOldColorAttrs&BC_MASK;
-        SetConsoleTextAttribute(hStdout, fc|bc);
+        if(FC_DEFAULT==fg)
+            fg=wOldColorAttrs&FC_MASK;
+        if(BC_DEFAULT==bg)
+            bg=wOldColorAttrs&BC_MASK;
+        SetConsoleTextAttribute(hStdout, fg|bg);
     }
 
     va_list args;
@@ -133,12 +130,12 @@ void printf_color(/*in*/ int fc, /*in*/ int bc, /*in*/ const char* fmt, /*in*/..
     if(bSuccess){
 # endif
 
-    if(FC_DEFAULT==fc && BC_DEFAULT==bc){
+    if(FC_DEFAULT==fg && BC_DEFAULT==bg){
         printf("\033[0m");
-    }else if((FC_DEFAULT!=fc && BC_DEFAULT!=bc)){
-        printf("\033[%d;%dm",fc,bc);
-    }else{ // One in fc/bc is 0
-        printf("\033[%dm",fc|bc);
+    }else if((FC_DEFAULT!=fg && BC_DEFAULT!=bg)){
+        printf("\033[%d;%dm",fg,bg);
+    }else{ // One in fg/bg is 0
+        printf("\033[%dm",fg|bg);
     }
 
 # ifdef _WIN32
@@ -163,41 +160,7 @@ void printf_color(/*in*/ int fc, /*in*/ int bc, /*in*/ const char* fmt, /*in*/..
 #endif
 }
 
-// 挂起进程,等待用户按键
-// int pause(void);
-// 返回值:按键的ASCII码
-int pause(void){
-#if defined(_WIN32)
-    return getch();
-#elif defined(__linux__)
-    char inbuf;
-    struct termios tios, tios_pause;
-    int bSuccess=1; // Must init to 1
-    fflush(stdout);
-
-    if(tcgetattr(STDIN_FILENO, &tios)<0)
-        bSuccess=0;
-
-    tios_pause = tios;
-    tios_pause.c_lflag&=~ICANON; // 关闭Canonical模式(这样无须换行即可获得输入)
-    tios_pause.c_lflag&=~ECHO;   // 关闭回显
-    tios_pause.c_cc[VMIN]=1;     // 在非Canonical模式下最少输入1字符即可读取
-    tios_pause.c_cc[VTIME]=0;    // read会一直等待输入,无超时
-    if(tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause)<0) // 修改并立刻生效
-        bSuccess=0;
-
-    if(read(STDIN_FILENO,&inbuf,1 /*bytes to read*/)<0)
-        bSuccess=0;
-
-    if(tcsetattr(STDIN_FILENO, TCSANOW, &tios)<0)
-        bSuccess=0;
-
-    return (bSuccess ? (int)inbuf : 0);
-#endif
-}
-
 // 清除终端/控制台内容, and move cursor to upper left corner
-// int clear_term(void);
 // Returned 0 for success, -1 for failure
 void clear_term(void){
 #if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
@@ -235,3 +198,72 @@ void clear_term(void){
     return;
 #endif
 }
+
+// Suspend the process and wait for user input
+// No echo displayed
+int get_key(void){
+    int ret = K_UNDEF;
+#if defined(_WIN32)
+    if((ret=getch()) == 0xe0){
+        switch(getch()){
+        case 72:
+            return K_UP;
+        case 80:
+            return K_DOWN;
+        case 75:
+            return K_LEFT;
+        case 77:
+            return K_RIGHT;
+        default:
+            return K_UNDEF;
+        }
+    }else{
+        return ret;
+    }
+#elif defined(__linux__)
+    char key_buf[1]; // Note that certain key presses are indicated with 3 chars(e.g. arrow keys)
+    struct termios tios, tios_pause;
+
+    fflush(stdout);
+
+    tcgetattr(STDIN_FILENO, &tios);
+
+    tios_pause = tios;
+    tios_pause.c_lflag&=~ICANON; // 关闭Canonical模式(这样无须换行即可获得输入)
+    tios_pause.c_lflag&=~ECHO;   // 关闭回显
+    tios_pause.c_cc[VMIN]=1;     // 在非Canonical模式下最少输入1字符即可读取
+    tios_pause.c_cc[VTIME]=0;    // read会一直等待输入,无超时
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
+
+    if(read(STDIN_FILENO,key_buf,1), '\033' == key_buf[0]){
+        if(read(STDIN_FILENO,key_buf,1), '[' == key_buf[0]){
+            switch(read(STDIN_FILENO,key_buf,1), key_buf[0]){
+                case 'A':
+                    ret = K_UP;
+                    break;
+                case 'B':
+                    ret = K_DOWN;
+                    break;
+                case 'D':
+                    ret = K_LEFT;
+                    break;
+                case 'C':
+                    ret = K_RIGHT;
+                    break;
+                default:
+                    ret = K_UNDEF;
+            }
+        }else{
+            ret = K_UNDEF;
+        }
+    }else{
+        ret = key_buf[0];
+    }
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &tios);
+
+    return ret;
+#endif
+}
+

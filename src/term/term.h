@@ -88,14 +88,14 @@ SOFTWARE.
   } FC;
 
   typedef enum {
-      BC_BLACK       = 40 
-      BC_DARKRED     = 41 
-      BC_DARKGREEN   = 42 
-      BC_DARKYELLOW  = 43 
-      BC_DARKBLUE    = 44 
-      BC_DARKMAGENTA = 45 
-      BC_DARKCYAN    = 46 
-      BC_SILVER      = 47 
+      BC_BLACK       = 40
+      BC_DARKRED     = 41
+      BC_DARKGREEN   = 42
+      BC_DARKYELLOW  = 43
+      BC_DARKBLUE    = 44
+      BC_DARKMAGENTA = 45
+      BC_DARKCYAN    = 46
+      BC_SILVER      = 47
       BC_GRAY        = 100
       BC_RED         = 101
       BC_GREEN       = 102
@@ -108,12 +108,25 @@ SOFTWARE.
   } BC;
 #endif
 
+typedef enum{
+    K_UNDEF = -1,
+
+    // Special keys
+    K_UP    = 256, // <=255 reserved for ASCII
+    K_DOWN  ,
+    K_LEFT  ,
+    K_RIGHT ,
+
+    K_EXCEPT
+}KEY_PRESS;
+
+
 //
 // Functions declarations
 //
 extern int  get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
-extern void printf_color(/*in*/ int fc, /*in*/ int bc, /*in*/ const char* fmt, /*in*/...);
-extern int  pause(void);
+extern void printf_color(/*in*/ int fg, /*in*/ int bg, /*in*/ const char* fmt, /*in*/...);
 extern void clear_term(void);
+extern int  get_key(void);
 
 #endif  // _H_TERM_H
