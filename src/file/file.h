@@ -60,7 +60,7 @@ SOFTWARE.
  *
  * NOTICE only offset is 64-bit
  */
-extern int is_file_too_large(const char* pathname);
+extern int access_test(const char* path);
 # if defined(_WIN32)
 extern int truncate_WIN32_API(const char* path, off_t length);
 # endif
