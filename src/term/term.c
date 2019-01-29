@@ -237,7 +237,12 @@ int get_key(void){
     tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
 
     if(read(STDIN_FILENO,key_buf,1), '\033' == key_buf[0]){
-        if(read(STDIN_FILENO,key_buf,1), '[' == key_buf[0]){
+        tios_pause.c_cc[VTIME]=0; // VMIN VTIME均为0, Non blocking
+        tios_pause.c_cc[VMIN]=0;  // 用于区分ESC与ESC seq
+        tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
+        if(read(STDIN_FILENO,key_buf,1) == 0){
+            ret = '\033';
+        }else if('[' == key_buf[0]){
             switch(read(STDIN_FILENO,key_buf,1), key_buf[0]){
                 case 'A':
                     ret = K_UP;
