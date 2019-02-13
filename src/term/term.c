@@ -22,6 +22,7 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include "term.h"
 
 #if defined(_WIN32)
@@ -65,7 +66,7 @@ int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
 }
 
 // 可设置颜色的printf
-void printf_color(/*in*/ int fg, /*in*/ int bg, /*in*/ const char* fmt, /*in*/...){
+void printf_color(int fg, int bg, const char* fmt, ...){
 #if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
 # define FC_MASK 0x0000000F
 # define BC_MASK 0x000000F0
@@ -272,3 +273,130 @@ int get_key(void){
 #endif
 }
 
+// * Do NOT delete move_cursor, though temporarily disabled
+//
+// #if defined(__linux__)
+// // 获取终端光标位置(1,1)为原点
+// static int locate_cursor(/*out*/ int* ref_x, int* ref_y){
+//     if((!ref_y) || (!ref_x))
+//         return (-1);
+//     printf("\033[6n");
+//
+//     char key_buf[1];
+//     struct termios tios, tios_pause;
+//
+//     fflush(stdout);
+//
+//     tcgetattr(STDIN_FILENO, &tios);
+//
+//     tios_pause = tios;
+//     tios_pause.c_lflag&=~ICANON; // 关闭Canonical模式(这样无须换行即可获得输入)
+//     tios_pause.c_lflag&=~ECHO;   // 关闭回显
+//     tios_pause.c_cc[VMIN]=1;     // 在非Canonical模式下最少输入1字符即可读取
+//     tios_pause.c_cc[VTIME]=0;    // read会一直等待输入,无超时
+//
+//     tcsetattr(STDIN_FILENO, TCSANOW, &tios_pause);
+//
+//     if(read(STDIN_FILENO,key_buf,1), '\033' != key_buf[0])
+//         return (-1);
+//     if(read(STDIN_FILENO,key_buf,1), '[' != key_buf[0])
+//         return (-1);
+//
+//     *ref_y=0;
+//     for(read(STDIN_FILENO,key_buf,1); key_buf[0]>='0' && key_buf[0]<='9'; read(STDIN_FILENO,key_buf,1)){
+//         (*ref_y)=(*ref_y)*10+key_buf[0]-'0';
+//     }
+//
+//     if(';' != key_buf[0])
+//         return (-1);
+//
+//     *ref_x=0;
+//     for(read(STDIN_FILENO,key_buf,1); key_buf[0]>='0' && key_buf[0]<='9'; read(STDIN_FILENO,key_buf,1)){
+//         (*ref_x)=(*ref_x)*10+key_buf[0]-'0';
+//     }
+//
+//     if('R' != key_buf[0])
+//         return (-1);
+//
+//     return 0;
+// }
+// #elif (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+// static int locate_cursor(/*out*/ int* ref_x, int* ref_y){
+//     if((!ref_y) || (!ref_x))
+//         return (-1);
+//     printf("\033[6n");
+//     if(getch() != '\033')
+//         return (-1);
+//     if(getch() != '[')
+//         return (-1);
+//
+//     int c;
+//
+//     *ref_y=0;
+//     for(c=getch(); c>='0' && c<='9'; c=getch()){
+//         (*ref_y)=(*ref_y)*10+c-'0';
+//     }
+//
+//     if(c != ';')
+//         return (-1);
+//
+//     *ref_x=0;
+//     for(c=getch(); c>='0' && c<='9'; c=getch()){
+//         (*ref_x)=(*ref_x)*10+c-'0';
+//     }
+//
+//     if(c != 'R')
+//         return (-1);
+//
+//     return 0;
+// }
+// #else // WIN32 w/o VT ESC seq
+//     // Use CONSOLE_SCREEN_BUFFER_INFO instead
+// #endif
+//
+// // 移动光标
+// // 入参为相对移动量
+// int move_cursor(int xrel, int yrel){
+//     int w,h;
+//     if(get_term_size(&w, &h))
+//         return (-1);
+// #if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+//     CONSOLE_SCREEN_BUFFER_INFO csbi;
+//     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
+//     COORD crdDest = {csbi.dwCursorPosition.X+xrel, csbi.dwCursorPosition.Y+yrel};
+//     if( crdDest.X<csbi.srWindow.Left || crdDest.X>csbi.srWindow.Right \
+//       || crdDest.Y<csbi.srWindow.Top || crdDest.Y>csbi.srWindow.Bottom )
+//         return (-1);
+//     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),crdDest);
+// #elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+//     int x, y;
+//     if(locate_cursor(&x, &y) == (-1))
+//         return (-1);
+//     x += xrel;
+//     y += yrel;
+//     if(x<=0 || y<=0 || x>w || y>h)
+//         return (-1);
+//     printf("\033[%d;%dH", y, x);
+// #endif
+//     return 0;
+// }
+
+// 放置光标
+// 入参为绝对位置
+int put_cursor(int x, int y){
+    int w,h;
+    if(get_term_size(&w, &h))
+        return (-1);
+    if(x<=0 || y<=0 || x>w || y>h)
+        return (-1);
+#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+    GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
+    COORD crdDest = {csbi.srWindow.Left+x-1,csbi.srWindow.Top+y-1};
+    if(SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),crdDest))
+        return (-1);
+#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+    printf("\033[%d;%dH", y, x);
+#endif
+    return 0;
+}
