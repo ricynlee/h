@@ -117,7 +117,7 @@ typedef enum{
     K_LEFT  ,
     K_RIGHT ,
 
-    K_EXCEPT
+    K_BUTT
 }KEY_PRESS;
 
 
@@ -128,5 +128,6 @@ extern int  get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
 extern void printf_color(/*in*/ int fg, /*in*/ int bg, /*in*/ const char* fmt, /*in*/...);
 extern void clear_term(void);
 extern int  get_key(void);
+extern int  put_cursor(int x, int y);
 
 #endif  // _H_TERM_H
