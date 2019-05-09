@@ -21,10 +21,10 @@
   - get_key
   - put_cursor
 
-> 跨平台,支持Windows/Linux.
-> 使用gcc或mingw(TDM-GCC)编译.
-> 重要的宏`_WIN32_USE_VTES`,`_FILE_OFFSET_BITS`.用`$CC -D`传递给编译器.详情参考代码.
-> `$CFLAGS`需要(隐式或显式)包含`-m32`.
+> 跨平台,支持Windows/Linux.  
+> 使用gcc或mingw(TDM-GCC)编译.  
+> 重要的宏`_WIN32_USE_VTES`,`_FILE_OFFSET_BITS`.用`$CC -D`传递给编译器.详情参考代码.  
+> `$CFLAGS`需要(隐式或显式)包含`-m32`.  
 
 ***
 
@@ -46,7 +46,7 @@ Eitch was intended to be a **h**ex editor, and this is how eitch got its name \(
   - get_key
   - put_cursor
  
-> Linux/Windows supported
-> Built with gcc or mingw (tdm-gcc)
-> Predefined macros `_WIN32_USE_VTES`,`_FILE_OFFSET_BITS` are important. Pass them to compiler with `$CC -D`. Vide the code for details
-> `-m32` should be (implicitly or explicitly) included in `$CFLAGS`
+> Linux/Windows supported  
+> Built with gcc or mingw (tdm-gcc)  
+> Predefined macros `_WIN32_USE_VTES`,`_FILE_OFFSET_BITS` are important. Pass them to compiler with `$CC -D`. Vide the code for details  
+> `-m32` should be (implicitly or explicitly) included in `$CFLAGS`  
