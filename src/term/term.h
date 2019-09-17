@@ -26,7 +26,7 @@ SOFTWARE.
 //
 // Type & constant definitions
 //
-#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+#if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
 # include <windows.h>
 
   #define FC_BLACK       (0)
@@ -65,46 +65,46 @@ SOFTWARE.
   #define BC_WHITE       (BACKGROUND_INTENSITY|BACKGROUND_RED|BACKGROUND_GREEN|BACKGROUND_BLUE)
   #define BC_DEFAULT     (-1)
 
-#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+#elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
   // Virtual Terminal Escape Sequence (VTES for short)
   typedef enum {
-      FC_BLACK       = 30
-      FC_DARKRED     = 31
-      FC_DARKGREEN   = 32
-      FC_DARKYELLOW  = 33
-      FC_DARKBLUE    = 34
-      FC_DARKMAGENTA = 35
-      FC_DARKCYAN    = 36
-      FC_SILVER      = 37
-      FC_GRAY        = 90
-      FC_RED         = 91
-      FC_GREEN       = 92
-      FC_YELLOW      = 93
-      FC_BLUE        = 94
-      FC_MAGENTA     = 95
-      FC_CYAN        = 96
-      FC_WHITE       = 97
-      FC_DEFAULT     = 0
+      FC_BLACK       = 0   ,
+      FC_DARKRED     = 1   ,
+      FC_DARKGREEN   = 2   ,
+      FC_DARKYELLOW  = 3   ,
+      FC_DARKBLUE    = 4   ,
+      FC_DARKMAGENTA = 5   ,
+      FC_DARKCYAN    = 6   ,
+      FC_SILVER      = 7   ,
+      FC_GRAY        = 8   ,
+      FC_RED         = 9   ,
+      FC_GREEN       = 10  ,
+      FC_YELLOW      = 11  ,
+      FC_BLUE        = 12  ,
+      FC_MAGENTA     = 13  ,
+      FC_CYAN        = 14  ,
+      FC_WHITE       = 15  ,
+      FC_DEFAULT     = (-1)
   } FC;
 
   typedef enum {
-      BC_BLACK       = 40
-      BC_DARKRED     = 41
-      BC_DARKGREEN   = 42
-      BC_DARKYELLOW  = 43
-      BC_DARKBLUE    = 44
-      BC_DARKMAGENTA = 45
-      BC_DARKCYAN    = 46
-      BC_SILVER      = 47
-      BC_GRAY        = 100
-      BC_RED         = 101
-      BC_GREEN       = 102
-      BC_YELLOW      = 103
-      BC_BLUE        = 104
-      BC_MAGENTA     = 105
-      BC_CYAN        = 106
-      BC_WHITE       = 107
-      BC_DEFAULT     = 0
+      BC_BLACK       = 0   ,
+      BC_DARKRED     = 1   ,
+      BC_DARKGREEN   = 2   ,
+      BC_DARKYELLOW  = 3   ,
+      BC_DARKBLUE    = 4   ,
+      BC_DARKMAGENTA = 5   ,
+      BC_DARKCYAN    = 6   ,
+      BC_SILVER      = 7   ,
+      BC_GRAY        = 8   ,
+      BC_RED         = 9   ,
+      BC_GREEN       = 10  ,
+      BC_YELLOW      = 11  ,
+      BC_BLUE        = 12  ,
+      BC_MAGENTA     = 13  ,
+      BC_CYAN        = 14  ,
+      BC_WHITE       = 15  ,
+      BC_DEFAULT     = (-1)
   } BC;
 #endif
 

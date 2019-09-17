@@ -67,15 +67,15 @@ int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
 
 // 可设置颜色的printf
 void printf_color(int fg, int bg, const char* fmt, ...){
-#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+#if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
 # define FC_MASK 0x0000000F
 # define BC_MASK 0x000000F0
 
-	HANDLE  hStdout;
-	WORD    wOldColorAttrs;
+    HANDLE  hStdout;
+    WORD    wOldColorAttrs;
     BOOL    bSuccess;
-	CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
-	hStdout=GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    hStdout=GetStdHandle(STD_OUTPUT_HANDLE);
     if(INVALID_HANDLE_VALUE==hStdout){
         bSuccess=FALSE;
     }else{
@@ -98,7 +98,7 @@ void printf_color(int fg, int bg, const char* fmt, ...){
     if(bSuccess){
         SetConsoleTextAttribute(hStdout, wOldColorAttrs);
     }
-#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+#elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
 # ifdef _WIN32
 
 #   ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
@@ -134,9 +134,11 @@ void printf_color(int fg, int bg, const char* fmt, ...){
     if(FC_DEFAULT==fg && BC_DEFAULT==bg){
         printf("\033[0m");
     }else if((FC_DEFAULT!=fg && BC_DEFAULT!=bg)){
-        printf("\033[%d;%dm",fg,bg);
-    }else{ // One in fg/bg is 0
-        printf("\033[%dm",fg|bg);
+        printf("\033[38;5;%d;48;5;%dm",fg,bg);
+    }else if(FC_DEFAULT!=fg){
+        printf("\033[49;38;5;%dm",fg);
+    }else if(BC_DEFAULT!=bg){
+        printf("\033[39;48;5;%dm",bg);
     }
 
 # ifdef _WIN32
@@ -164,7 +166,7 @@ void printf_color(int fg, int bg, const char* fmt, ...){
 // 清除终端/控制台内容, and move cursor to upper left corner
 // Returned 0 for success, -1 for failure
 void clear_term(void){
-#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+#if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
     COORD   coordScreen = { 0, 0 };
     BOOL    bSuccess = 1;
     DWORD   cCharsWritten;
@@ -194,7 +196,7 @@ void clear_term(void){
         return;
 
     return;
-#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+#elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
     printf(" \033[2J\033[H");
     return;
 #endif
@@ -273,7 +275,7 @@ int get_key(void){
 #endif
 }
 
-// * Do NOT delete move_cursor, though temporarily disabled
+// * Do NOT delete locate_cursor & move_cursor, though temporarily disabled
 //
 // #if defined(__linux__)
 // // 获取终端光标位置(1,1)为原点
@@ -320,7 +322,7 @@ int get_key(void){
 //
 //     return 0;
 // }
-// #elif (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+// #elif (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
 // static int locate_cursor(/*out*/ int* ref_x, int* ref_y){
 //     if((!ref_y) || (!ref_x))
 //         return (-1);
@@ -351,7 +353,8 @@ int get_key(void){
 //     return 0;
 // }
 // #else // WIN32 w/o VT ESC seq
-//     // Use CONSOLE_SCREEN_BUFFER_INFO instead
+//     // GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
+//     // COORD crdDest = {csbi.dwCursorPosition.X, csbi.dwCursorPosition.Y};
 // #endif
 //
 // // 移动光标
@@ -360,7 +363,7 @@ int get_key(void){
 //     int w,h;
 //     if(get_term_size(&w, &h))
 //         return (-1);
-// #if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+// #if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
 //     CONSOLE_SCREEN_BUFFER_INFO csbi;
 //     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
 //     COORD crdDest = {csbi.dwCursorPosition.X+xrel, csbi.dwCursorPosition.Y+yrel};
@@ -368,7 +371,7 @@ int get_key(void){
 //       || crdDest.Y<csbi.srWindow.Top || crdDest.Y>csbi.srWindow.Bottom )
 //         return (-1);
 //     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),crdDest);
-// #elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+// #elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
 //     int x, y;
 //     if(locate_cursor(&x, &y) == (-1))
 //         return (-1);
@@ -389,13 +392,13 @@ int put_cursor(int x, int y){
         return (-1);
     if(x<=0 || y<=0 || x>w || y>h)
         return (-1);
-#if defined(_WIN32) && (!defined(_WIN32_USE_VTES) || !_WIN32_USE_VTES)
+#if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
     COORD crdDest = {csbi.srWindow.Left+x-1,csbi.srWindow.Top+y-1};
     if(SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),crdDest))
         return (-1);
-#elif defined(__linux__) || (defined(_WIN32_USE_VTES) && _WIN32_USE_VTES)
+#elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
     printf("\033[%d;%dH", y, x);
 #endif
     return 0;
