@@ -29,13 +29,57 @@ SOFTWARE.
 # include <windows.h>
 # include <conio.h>
 #elif defined(__linux__)
+# undef _WIN32_PREFER_ANSI_ESC_SEQ
 # include <sys/ioctl.h>
 # include <unistd.h>
 # include <termios.h>
+#else
+# error Unsupported platform
 #endif
 
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define MAX(x,y) ((x)>(y)?(x):(y))
+
+#if defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ
+static bool enable_esc_seq_support(void){
+    static bool esc_seq_support_enabled = false;
+    if(esc_seq_support_enabled)
+        return true;
+
+# ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+#   define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+# endif // ENABLE_VIRTUAL_TERMINAL_PROCESSING
+
+# ifndef DISABLE_NEWLINE_AUTO_RETURN
+#   define DISABLE_NEWLINE_AUTO_RETURN        0x0008
+# endif // DISABLE_NEWLINE_AUTO_RETURN
+
+    BOOL bSuccess=TRUE; // Must init to 1
+    HANDLE hStdout;
+    hStdout=GetStdHandle(STD_OUTPUT_HANDLE);
+    if(INVALID_HANDLE_VALUE==hStdout){
+        bSuccess=FALSE;
+    }
+    DWORD dwOriginalOutMode = 0;
+    if(!bSuccess || !GetConsoleMode(hStdout, &dwOriginalOutMode)){
+        bSuccess=FALSE;
+    }
+    DWORD dwOutMode = dwOriginalOutMode|ENABLE_VIRTUAL_TERMINAL_PROCESSING|DISABLE_NEWLINE_AUTO_RETURN;
+    if(!bSuccess || !SetConsoleMode(hStdout, dwOutMode)){
+        bSuccess=FALSE;
+        // we failed to set both modes, try to step down mode gracefully.
+        dwOutMode = dwOriginalOutMode|ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        if (!bSuccess || !SetConsoleMode(hStdout, dwOutMode)){
+            bSuccess=FALSE;
+        }
+    }
+    if(bSuccess){
+        esc_seq_support_enabled = true;
+    }
+
+    return esc_seq_support_enabled;
+}
+#endif
 
 // 获取终端/控制台大小(以字符计)
 // 返回值:返回0为成功,否则失败.
@@ -100,35 +144,7 @@ void printf_color(int fg, int bg, const char* fmt, ...){
     }
 #elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
 # ifdef _WIN32
-
-#   ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-#     define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-#   endif // ENABLE_VIRTUAL_TERMINAL_PROCESSING
-
-#   ifndef DISABLE_NEWLINE_AUTO_RETURN
-#     define DISABLE_NEWLINE_AUTO_RETURN        0x0008
-#   endif // DISABLE_NEWLINE_AUTO_RETURN
-
-    int bSuccess=1; // Must init to 1
-    HANDLE hStdout;
-    hStdout=GetStdHandle(STD_OUTPUT_HANDLE);
-    if(INVALID_HANDLE_VALUE==hStdout){
-        bSuccess=0;
-    }
-    DWORD dwOriginalOutMode = 0;
-    if(!bSuccess || !GetConsoleMode(hStdout, &dwOriginalOutMode)){
-        bSuccess=0;
-    }
-    DWORD dwOutMode = dwOriginalOutMode|ENABLE_VIRTUAL_TERMINAL_PROCESSING|DISABLE_NEWLINE_AUTO_RETURN;
-    if(!bSuccess || !SetConsoleMode(hStdout, dwOutMode)){
-        bSuccess=0;
-        // we failed to set both modes, try to step down mode gracefully.
-        dwOutMode = dwOriginalOutMode|ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-        if (!bSuccess || !SetConsoleMode(hStdout, dwOutMode)){
-            bSuccess=0;
-        }
-    }
-    if(bSuccess){
+    enable_esc_seq_support();
 # endif
 
     if(FC_DEFAULT==fg && BC_DEFAULT==bg){
@@ -141,25 +157,12 @@ void printf_color(int fg, int bg, const char* fmt, ...){
         printf("\033[39;48;5;%dm",bg);
     }
 
-# ifdef _WIN32
-    }
-# endif
-
     va_list args;
     va_start(args,fmt);
     vprintf(fmt,args);
     va_end(args);
 
-# ifdef _WIN32
-    if(bSuccess){
-# endif
-
     printf("\033[0m");
-
-# ifdef _WIN32
-    }
-# endif
-
 #endif
 }
 
@@ -197,6 +200,9 @@ void clear_term(void){
 
     return;
 #elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
+# ifdef _WIN32
+    enable_esc_seq_support();
+# endif
     printf(" \033[2J\033[H");
     return;
 #endif
@@ -326,6 +332,9 @@ int get_key(void){
 // static int locate_cursor(/*out*/ int* ref_x, int* ref_y){
 //     if((!ref_y) || (!ref_x))
 //         return (-1);
+// # ifdef _WIN32
+//     enable_esc_seq_support();
+// # endif
 //     printf("\033[6n");
 //     if(getch() != '\033')
 //         return (-1);
@@ -372,6 +381,9 @@ int get_key(void){
 //         return (-1);
 //     SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),crdDest);
 // #elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
+// # ifdef _WIN32
+//     enable_esc_seq_support();
+// # endif
 //     int x, y;
 //     if(locate_cursor(&x, &y) == (-1))
 //         return (-1);
@@ -399,6 +411,9 @@ int put_cursor(int x, int y){
     if(SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),crdDest))
         return (-1);
 #elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
+# ifdef _WIN32
+    enable_esc_seq_support();
+# endif
     printf("\033[%d;%dH", y, x);
 #endif
     return 0;
