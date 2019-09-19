@@ -123,6 +123,7 @@ void prn_help_msg(void){
     int pos_x = 0, pos_y = 0; // Display origin of HELP_MSG
     int prev_tsz_x, prev_tsz_y, prev_pos_x, prev_pos_y=-1;
 
+    setvbuf(stdout, NULL, _IOFBF, 2048); // Full-buffered output to ease/avoid flickering
     while(1){ // Checking if arrow key pressed
         get_term_size(&tsz_x, &tsz_y);
 
@@ -143,6 +144,7 @@ void prn_help_msg(void){
             prev_tsz_y = tsz_y;
 
             printf_color(FC_DEFAULT, BC_DARKGREEN, "PRESS ARROW KEYS TO SCROLL");
+            fflush(stdout);
         }
 
 
@@ -172,5 +174,5 @@ void prn_help_msg(void){
 
 int main(){
     prn_help_msg();
-    return 0;
+    return 0; //End of main
 }

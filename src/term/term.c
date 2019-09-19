@@ -83,11 +83,42 @@ static bool enable_esc_seq_support(void){
 
 // 获取终端/控制台大小(以字符计)
 // 返回值:返回0为成功,否则失败.
-int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
+int get_term_size(int* const ref_w, int* const ref_h){
     if((!ref_w) || (!ref_h))
         return (-1);
 
 #if defined(_WIN32)
+// Commented code is too slow
+// # if defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ
+//     enable_esc_seq_support();
+//     int c;
+//
+//     printf("\033[18t");
+//     if(getch() != '\033')
+//         return (-1);
+//     if(getch() != '[')
+//         return (-1);
+//     if(getch() != '8')
+//         return (-1);
+//     if(getch() != ';')
+//         return (-1);
+//
+//     *ref_h=0;
+//     for(c=getch(); c>='0' && c<='9'; c=getch()){
+//         *ref_h=(*ref_h)*10+c-'0';
+//     }
+//
+//     if(c != ';')
+//         return (-1);
+//
+//     *ref_w=0;
+//     for(c=getch(); c>='0' && c<='9'; c=getch()){
+//         *ref_w=(*ref_w)*10+c-'0';
+//     }
+//
+//     if(c != 't')
+//         return (-1);
+// # else //!_WIN32_PREFER_ANSI_ESC_SEQ
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     int winw, winh, bufw, bufh;
     if(!GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
@@ -98,6 +129,7 @@ int get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h){
     bufh=csbi.dwSize.Y; // rows
     *ref_w=MIN(winw,bufw);
     *ref_h=MIN(winh,bufh);
+// # endif // _WIN32_PREFER_ANSI_ESC_SEQ
 #elif defined(__linux__)
     struct winsize termsz;
     if(ioctl(0, TIOCGWINSZ , &termsz))
@@ -397,24 +429,24 @@ int get_key(void){
 // }
 
 // 放置光标
-// 入参为绝对位置
-int put_cursor(int x, int y){
+// 入参为绝对位置,原点(rol, col)=(1,1)
+int put_cursor(int col, int row){
     int w,h;
     if(get_term_size(&w, &h))
         return (-1);
-    if(x<=0 || y<=0 || x>w || y>h)
+    if(col<=0 || row<=0 || col>w || row>h)
         return (-1);
 #if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE),&csbi);
-    COORD crdDest = {csbi.srWindow.Left+x-1,csbi.srWindow.Top+y-1};
+    COORD crdDest = {csbi.srWindow.Left+col-1,csbi.srWindow.Top+row-1};
     if(SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE),crdDest))
         return (-1);
 #elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
 # ifdef _WIN32
     enable_esc_seq_support();
 # endif
-    printf("\033[%d;%dH", y, x);
+    printf("\033[%d;%dH", row, col);
 #endif
     return 0;
 }
