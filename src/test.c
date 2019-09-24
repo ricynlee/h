@@ -21,6 +21,7 @@ SOFTWARE.
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include "term/term.h"
 
@@ -123,13 +124,13 @@ void prn_help_msg(void){
     int pos_x = 0, pos_y = 0; // Display origin of HELP_MSG
     int prev_tsz_x, prev_tsz_y, prev_pos_x, prev_pos_y=-1;
 
-    setvbuf(stdout, NULL, _IOFBF, 2048); // Full-buffered output to ease/avoid flickering
     while(1){ // Checking if arrow key pressed
         get_term_size(&tsz_x, &tsz_y);
 
         if(pos_x!=prev_pos_x || pos_y!=prev_pos_y || tsz_x!=prev_tsz_x || tsz_y!=prev_tsz_y){
             clear_term();
 
+            setvbuf(stdout, NULL, _IOFBF, 2048); // Full-buffered output to ease/avoid flickering
             for(int i=pos_y; i<=MIN(max_y, pos_y+tsz_y-2); i++){
 #if defined(__WIN32)
                 printf("%-.*s\n", tsz_x-1, HELP_MSG[i] + MIN(strlen(HELP_MSG[i]), pos_x));
@@ -143,8 +144,9 @@ void prn_help_msg(void){
             prev_tsz_x = tsz_x;
             prev_tsz_y = tsz_y;
 
+            // fflush(stdout); // Not necessary
+            setvbuf(stdout, NULL, _IONBF, 0);
             printf_color(FC_DEFAULT, BC_DARKGREEN, "PRESS ARROW KEYS TO SCROLL");
-            fflush(stdout);
         }
 
 
@@ -173,6 +175,8 @@ void prn_help_msg(void){
 }
 
 int main(){
+    set_cursor_visibility(false);
     prn_help_msg();
+    set_cursor_visibility(true);
     return 0; //End of main
 }
