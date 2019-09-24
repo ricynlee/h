@@ -112,7 +112,7 @@ static char* HELP_MSG[] = {
 
 #define MIN(x,y) ((x)<(y)?(x):(y))
 #define MAX(x,y) ((x)>(y)?(x):(y))
-// 显示帮助信息(Horizontal & vertical scrollable with arrow keys)
+
 void prn_help_msg(void){
     int max_x = 0, max_y = sizeof(HELP_MSG)/sizeof(char*)-1; // Size of HELP_MSG
     for(int i=0; i<=max_y; i++){

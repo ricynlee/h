@@ -124,10 +124,11 @@ typedef enum{
 //
 // Functions declarations
 //
-extern int  get_term_size(/*out*/ int* ref_w, /*out*/ int* ref_h);
-extern void printf_color(/*in*/ int fg, /*in*/ int bg, /*in*/ const char* fmt, /*in*/...);
+extern int  get_term_size(int* ref_w, int* ref_h);
+extern void printf_color(int fg, int bg, const char* fmt, ...);
 extern void clear_term(void);
 extern int  get_key(void);
 extern int  put_cursor(int x, int y);
+extern int set_cursor_visibility(bool visible);
 
 #endif  // _H_TERM_H

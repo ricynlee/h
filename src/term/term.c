@@ -81,12 +81,12 @@ static bool enable_esc_seq_support(void){
 }
 #endif
 
+// *********************************************************************************************************************** //
 // 获取终端/控制台大小(以字符计)
 // 返回值:返回0为成功,否则失败.
 int get_term_size(int* const ref_w, int* const ref_h){
     if((!ref_w) || (!ref_h))
         return (-1);
-
 #if defined(_WIN32)
 // Commented code is too slow
 // # if defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ
@@ -141,7 +141,7 @@ int get_term_size(int* const ref_w, int* const ref_h){
     return 0;
 }
 
-// 可设置颜色的printf
+// *********************************************************************************************************************** //
 void printf_color(int fg, int bg, const char* fmt, ...){
 #if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
 # define FC_MASK 0x0000000F
@@ -198,7 +198,8 @@ void printf_color(int fg, int bg, const char* fmt, ...){
 #endif
 }
 
-// 清除终端/控制台内容, and move cursor to upper left corner
+// *********************************************************************************************************************** //
+// Clear current term/console, and move cursor to upper left corner
 // Returned 0 for success, -1 for failure
 void clear_term(void){
 #if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
@@ -235,11 +236,12 @@ void clear_term(void){
 # ifdef _WIN32
     enable_esc_seq_support();
 # endif
-    printf(" \033[2J\033[H");
+    printf("\033[2J\033[H");
     return;
 #endif
 }
 
+// *********************************************************************************************************************** //
 // Suspend the process and wait for user input
 // No echo displayed
 int get_key(void){
@@ -313,6 +315,7 @@ int get_key(void){
 #endif
 }
 
+// *********************************************************************************************************************** //
 // * Do NOT delete locate_cursor & move_cursor, though temporarily disabled
 //
 // #if defined(__linux__)
@@ -428,6 +431,7 @@ int get_key(void){
 //     return 0;
 // }
 
+// *********************************************************************************************************************** //
 // 放置光标
 // 入参为绝对位置,原点(rol, col)=(1,1)
 int put_cursor(int col, int row){
@@ -447,6 +451,27 @@ int put_cursor(int col, int row){
     enable_esc_seq_support();
 # endif
     printf("\033[%d;%dH", row, col);
+#endif
+    return 0;
+}
+
+// *********************************************************************************************************************** //
+// 显示/隐藏光标
+int set_cursor_visibility(bool visible){
+#if defined(_WIN32) && (!defined(_WIN32_PREFER_ANSI_ESC_SEQ) || !_WIN32_PREFER_ANSI_ESC_SEQ)
+    CONSOLE_CURSOR_INFO cci;
+    GetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cci);
+    cci.bVisible = visible ? TRUE : FALSE ;
+    if(SetConsoleCursorInfo(GetStdHandle(STD_OUTPUT_HANDLE), &cci) == FALSE)
+        return (-1);
+#elif defined(__linux__) || (defined(_WIN32_PREFER_ANSI_ESC_SEQ) && _WIN32_PREFER_ANSI_ESC_SEQ)
+# ifdef _WIN32
+    enable_esc_seq_support();
+# endif
+    if(visible)
+        printf("\033[?25h");
+    else
+        printf("\033[?25l");
 #endif
     return 0;
 }

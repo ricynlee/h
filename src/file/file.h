@@ -28,7 +28,7 @@ SOFTWARE.
 
 //
 // Large file support (LFS)
-// 在CFLAGS里添加-D_FILE_OFFSET_BITS=64以启用LFS
+// Add -D_FILE_OFFSET_BITS=64 to CFLAGS to enable LFS
 # if defined(_WIN32) // WIN32
 #   if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS==64
 #     define lseek    _lseeki64
@@ -38,7 +38,7 @@ SOFTWARE.
 #   define truncate   truncate_WIN32_API
 # elif defined(__linux__) // LINUX
 #   if defined(_FILE_OFFSET_BITS) && _FILE_OFFSET_BITS==64 && __STDC_VERSION__>=199901L
-#     define truncate truncate64 // Weird. Def necessary only when -std=c99 enabled.
+#     define truncate truncate64 // Weird. Seems necessary only when -std=c99 enabled.
 #   endif
 #   define tell(fd)   lseek(fd,0,SEEK_CUR)
 # endif
@@ -47,7 +47,7 @@ SOFTWARE.
 // Function declarations
 //
 /*
- * 本头文件提供了POSIX文件操作函数,如
+ * POSIX-like file operation functions are provided as follows
  * open
  * close
  * lseek
@@ -55,10 +55,9 @@ SOFTWARE.
  * read
  * write
  * truncate
- * 经过本头文件的封装,MINGW/GCC的文件读写代码可以直接移植,
- * 并可以很方便地实现32位操作系统下的LFS.
  *
  * NOTICE only offset is 64-bit
+ * NOTICE the code applies only on 32-bit Windows
  */
 extern int access_test(const char* path);
 # if defined(_WIN32)
